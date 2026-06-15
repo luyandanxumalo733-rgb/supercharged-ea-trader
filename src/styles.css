@@ -63,8 +63,17 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0.16 0.04 260);
+  --foreground: oklch(0.98 0.01 240);
+  --brand: oklch(0.62 0.22 255);
+  --brand-glow: oklch(0.75 0.18 230);
+  --success: oklch(0.72 0.20 150);
+  --danger: oklch(0.65 0.25 25);
+  --surface: oklch(0.22 0.05 265);
+  --surface-2: oklch(0.27 0.06 265);
+  --gradient-brand: linear-gradient(135deg, oklch(0.55 0.22 255), oklch(0.75 0.18 220));
+  --gradient-scan: conic-gradient(from var(--scan-angle, 0deg), oklch(0.55 0.22 255), oklch(0.72 0.20 150), oklch(0.78 0.18 60), oklch(0.65 0.25 25), oklch(0.55 0.22 255));
+  --shadow-glow: 0 0 40px -8px oklch(0.62 0.22 255 / 0.6);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
