@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -140,15 +140,22 @@ function ChartScanner({ running }: { running: boolean }) {
   );
 }
 
-const MENU_ITEMS = [
-  { icon: LayoutDashboard, label: "Dashboard",   color: "oklch(0.65 0.22 255)" },
-  { icon: Activity,        label: "Live Scanner", color: "oklch(0.72 0.20 150)" },
-  { icon: Wallet,          label: "Portfolio",    color: "oklch(0.78 0.18 60)"  },
-  { icon: History,         label: "Trade History",color: "oklch(0.70 0.20 30)"  },
-  { icon: Bell,            label: "Alerts",       color: "oklch(0.68 0.22 340)" },
-  { icon: Shield,          label: "Risk Manager", color: "oklch(0.65 0.22 200)" },
-  { icon: Settings,        label: "Settings",     color: "oklch(0.70 0.15 290)" },
-  { icon: HelpCircle,      label: "Support",      color: "oklch(0.72 0.18 180)" },
+const MENU_ITEMS: Array<{
+  icon: typeof LayoutDashboard;
+  label: string;
+  color: string;
+  to?: "/" | "/analyzer" | "/broker";
+}> = [
+  { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
+  { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
+  { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
+  { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
+  { icon: Wallet,          label: "Portfolio",         color: "oklch(0.68 0.22 340)" },
+  { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)" },
+  { icon: Bell,            label: "Alerts",            color: "oklch(0.70 0.15 290)" },
+  { icon: Shield,          label: "Risk Manager",      color: "oklch(0.72 0.18 180)" },
+  { icon: Settings,        label: "Settings",          color: "oklch(0.74 0.16 110)" },
+  { icon: HelpCircle,      label: "Support",           color: "oklch(0.70 0.18 50)"  },
 ];
 
 function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -175,27 +182,35 @@ function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           </button>
         </div>
         <nav className="space-y-1 p-3">
-          {MENU_ITEMS.map(({ icon: Icon, label, color }) => (
-            <button
-              key={label}
-              className="group flex w-full items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-3 text-left transition-all hover:bg-white/10"
-            >
-              <span
-                className="grid h-9 w-9 place-items-center rounded-lg"
-                style={{
-                  background: `linear-gradient(135deg, ${color}, oklch(0.30 0.08 260))`,
-                  boxShadow: `0 0 14px -2px ${color}`,
-                }}
-              >
-                <Icon className="h-4 w-4 text-white" />
-              </span>
-              <span className="text-sm font-medium text-foreground">{label}</span>
-              <span
-                className="ml-auto h-2 w-2 rounded-full"
-                style={{ background: color, boxShadow: `0 0 8px ${color}` }}
-              />
-            </button>
-          ))}
+          {MENU_ITEMS.map(({ icon: Icon, label, color, to }) => {
+            const inner = (
+              <>
+                <span
+                  className="grid h-9 w-9 place-items-center rounded-lg"
+                  style={{
+                    background: `linear-gradient(135deg, ${color}, oklch(0.30 0.08 260))`,
+                    boxShadow: `0 0 14px -2px ${color}`,
+                  }}
+                >
+                  <Icon className="h-4 w-4 text-white" />
+                </span>
+                <span className="text-sm font-medium text-foreground">{label}</span>
+                <span
+                  className="ml-auto h-2 w-2 rounded-full"
+                  style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+                />
+              </>
+            );
+            const className =
+              "group flex w-full items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-3 text-left transition-all hover:bg-white/10";
+            return to ? (
+              <Link key={label} to={to} onClick={onClose} className={className}>
+                {inner}
+              </Link>
+            ) : (
+              <button key={label} className={className}>{inner}</button>
+            );
+          })}
         </nav>
       </aside>
     </>
