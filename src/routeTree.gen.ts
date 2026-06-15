@@ -9,8 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as BrokerRouteImport } from './routes/broker'
+import { Route as AnalyzerRouteImport } from './routes/analyzer'
 import { Route as IndexRouteImport } from './routes/index'
 
+const BrokerRoute = BrokerRouteImport.update({
+  id: '/broker',
+  path: '/broker',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyzerRoute = AnalyzerRouteImport.update({
+  id: '/analyzer',
+  path: '/analyzer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +31,50 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analyzer': typeof AnalyzerRoute
+  '/broker': typeof BrokerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analyzer': typeof AnalyzerRoute
+  '/broker': typeof BrokerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analyzer': typeof AnalyzerRoute
+  '/broker': typeof BrokerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/analyzer' | '/broker'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/analyzer' | '/broker'
+  id: '__root__' | '/' | '/analyzer' | '/broker'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyzerRoute: typeof AnalyzerRoute
+  BrokerRoute: typeof BrokerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/broker': {
+      id: '/broker'
+      path: '/broker'
+      fullPath: '/broker'
+      preLoaderRoute: typeof BrokerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analyzer': {
+      id: '/analyzer'
+      path: '/analyzer'
+      fullPath: '/analyzer'
+      preLoaderRoute: typeof AnalyzerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +87,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyzerRoute: AnalyzerRoute,
+  BrokerRoute: BrokerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
