@@ -87,8 +87,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Supercharged ea" },
       { name: "twitter:description", content: "Blues" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8ed0856d-0a30-4ff7-943a-f743ea4ceb74/id-preview-1f0b3741--b07e1550-de46-4604-94e1-1cc95ede7e69.lovable.app-1781504427738.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8ed0856d-0a30-4ff7-943a-f743ea4ceb74/id-preview-1f0b3741--b07e1550-de46-4604-94e1-1cc95ede7e69.lovable.app-1781504427738.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/919e2ebb-cb84-4350-99dd-e62ef09a9a44" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/919e2ebb-cb84-4350-99dd-e62ef09a9a44" },
     ],
     links: [
       {
