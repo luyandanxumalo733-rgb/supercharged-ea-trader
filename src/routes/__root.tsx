@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Supercharged ea" },
+      { name: "description", content: "Blues" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Supercharged ea" },
+      { property: "og:description", content: "Blues" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Supercharged ea" },
+      { name: "twitter:description", content: "Blues" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8ed0856d-0a30-4ff7-943a-f743ea4ceb74/id-preview-1f0b3741--b07e1550-de46-4604-94e1-1cc95ede7e69.lovable.app-1781504427738.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8ed0856d-0a30-4ff7-943a-f743ea4ceb74/id-preview-1f0b3741--b07e1550-de46-4604-94e1-1cc95ede7e69.lovable.app-1781504427738.png" },
     ],
     links: [
       {
