@@ -220,6 +220,12 @@ function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 function Index() {
   const [running, setRunning] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [brokerConnected, setBrokerConnected] = useState(false);
+  useEffect(() => {
+    try {
+      setBrokerConnected(!!localStorage.getItem("sc_broker"));
+    } catch { /* ignore */ }
+  }, [menuOpen]);
   const [lots, setLots] = useState<Record<string, string>>(() =>
     Object.fromEntries(PAIRS.map((p) => [p, "0.01"])),
   );
@@ -251,7 +257,38 @@ function Index() {
         </header>
         <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-        <section className="mt-6 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
+        {!brokerConnected && (
+          <Link
+            to="/broker"
+            className="mt-5 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.18_85_/_0.4)] p-3 transition hover:brightness-110"
+            style={{ background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" }}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.65 0.22 60)" }}>
+              <Sparkles className="h-5 w-5 text-white" />
+            </span>
+            <div className="flex-1">
+              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.16_85)]">Recommended</div>
+              <div className="text-sm font-semibold">Link your Headway MT5 account</div>
+            </div>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Setup →</span>
+          </Link>
+        )}
+
+        <Link
+          to="/analyzer"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.62 0.22 255)", boxShadow: "var(--shadow-glow)" }}>
+            <ScanLine className="h-5 w-5 text-white" />
+          </span>
+          <div className="flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-[oklch(0.78_0.18_230)]">AI Vision</div>
+            <div className="text-sm font-semibold">Analyze chart screenshot → Buy / Sell</div>
+          </div>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
+        </Link>
+
+        <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs uppercase tracking-widest text-muted-foreground">Status</div>
