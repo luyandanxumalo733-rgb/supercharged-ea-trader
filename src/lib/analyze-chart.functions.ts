@@ -57,11 +57,36 @@ export const analyzeChart = createServerFn({ method: "POST" })
     const json = await res.json();
     const raw = json?.choices?.[0]?.message?.content ?? "";
     const cleaned = String(raw).replace(/```json|```/g, "").trim();
-    let parsed: Record<string, unknown> = {};
+    type Analysis = {
+      signal: string;
+      confidence: number;
+      bias: string;
+      entry: string;
+      stopLoss: string;
+      takeProfit: string;
+      reasoning: string;
+    };
+    const fallback: Analysis = {
+      signal: "WAIT",
+      confidence: 0,
+      bias: "neutral",
+      entry: "",
+      stopLoss: "",
+      takeProfit: "",
+      reasoning: cleaned,
+    };
     try {
-      parsed = JSON.parse(cleaned);
+      const p = JSON.parse(cleaned) as Partial<Analysis>;
+      return {
+        signal: String(p.signal ?? "WAIT"),
+        confidence: Number(p.confidence ?? 0),
+        bias: String(p.bias ?? "neutral"),
+        entry: String(p.entry ?? ""),
+        stopLoss: String(p.stopLoss ?? ""),
+        takeProfit: String(p.takeProfit ?? ""),
+        reasoning: String(p.reasoning ?? ""),
+      } satisfies Analysis;
     } catch {
-      parsed = { signal: "WAIT", confidence: 0, bias: "neutral", reasoning: cleaned };
+      return fallback;
     }
-    return parsed;
   });
