@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import robotLogo from "@/assets/robot-logo.png";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,17 +23,33 @@ const PAIRS = [
 
 function Logo() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <div
-        className="relative grid h-10 w-10 place-items-center rounded-xl"
-        style={{ background: "var(--gradient-brand)", boxShadow: "var(--shadow-glow)" }}
+        className="relative grid h-12 w-12 place-items-center rounded-2xl"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 40%, oklch(0.55 0.22 255 / 0.9), oklch(0.20 0.10 260) 70%)",
+          boxShadow:
+            "0 0 24px oklch(0.62 0.22 255 / 0.7), inset 0 0 12px oklch(0.78 0.18 230 / 0.5)",
+        }}
       >
-        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="white" />
-        </svg>
+        <span
+          className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 100%, oklch(0.78 0.18 230 / 0.6), transparent 60%)",
+          }}
+        />
+        <img
+          src={robotLogo}
+          alt="SuperCharged robot mascot"
+          width={48}
+          height={48}
+          className="relative h-11 w-11 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
+        />
       </div>
       <div className="leading-tight">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.75_0.18_230)]">Algo EA</div>
+        <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.18_230)]">Algo EA</div>
         <div className="text-base font-bold text-foreground">SuperCharged</div>
       </div>
     </div>
@@ -122,8 +140,71 @@ function ChartScanner({ running }: { running: boolean }) {
   );
 }
 
+const MENU_ITEMS = [
+  { icon: LayoutDashboard, label: "Dashboard",   color: "oklch(0.65 0.22 255)" },
+  { icon: Activity,        label: "Live Scanner", color: "oklch(0.72 0.20 150)" },
+  { icon: Wallet,          label: "Portfolio",    color: "oklch(0.78 0.18 60)"  },
+  { icon: History,         label: "Trade History",color: "oklch(0.70 0.20 30)"  },
+  { icon: Bell,            label: "Alerts",       color: "oklch(0.68 0.22 340)" },
+  { icon: Shield,          label: "Risk Manager", color: "oklch(0.65 0.22 200)" },
+  { icon: Settings,        label: "Settings",     color: "oklch(0.70 0.15 290)" },
+  { icon: HelpCircle,      label: "Support",      color: "oklch(0.72 0.18 180)" },
+];
+
+function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <>
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      />
+      <aside
+        className={`fixed right-0 top-0 z-50 h-full w-72 transform border-l border-white/10 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.22 0.06 265) 0%, oklch(0.16 0.05 260) 100%)",
+        }}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+          <div className="text-sm font-semibold uppercase tracking-widest">Menu</div>
+          <button
+            onClick={onClose}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/5 text-foreground hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <nav className="space-y-1 p-3">
+          {MENU_ITEMS.map(({ icon: Icon, label, color }) => (
+            <button
+              key={label}
+              className="group flex w-full items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-3 text-left transition-all hover:bg-white/10"
+            >
+              <span
+                className="grid h-9 w-9 place-items-center rounded-lg"
+                style={{
+                  background: `linear-gradient(135deg, ${color}, oklch(0.30 0.08 260))`,
+                  boxShadow: `0 0 14px -2px ${color}`,
+                }}
+              >
+                <Icon className="h-4 w-4 text-white" />
+              </span>
+              <span className="text-sm font-medium text-foreground">{label}</span>
+              <span
+                className="ml-auto h-2 w-2 rounded-full"
+                style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+              />
+            </button>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
 function Index() {
-  const [running, setRunning] = useState(false);
+  const [running, setRunning] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [lots, setLots] = useState<Record<string, string>>(() =>
     Object.fromEntries(PAIRS.map((p) => [p, "0.01"])),
   );
@@ -144,10 +225,16 @@ function Index() {
       <div className="mx-auto max-w-md px-4 pb-32 pt-6">
         <header className="flex items-center justify-between">
           <Logo />
-          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-            v1.0
-          </div>
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-foreground transition hover:bg-white/10"
+            style={{ boxShadow: "0 0 16px -6px var(--brand)" }}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
         </header>
+        <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
         <section className="mt-6 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
           <div className="flex items-center justify-between">
