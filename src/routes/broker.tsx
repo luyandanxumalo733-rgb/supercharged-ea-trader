@@ -19,7 +19,7 @@ const HEADWAY_SERVERS = [
   "HeadwayInvest-Live 3",
 ];
 
-type Saved = { broker: string; server: string; login: string; name: string; connectedAt: string };
+type Saved = { broker: string; server: string; login: string; name: string; bridgeUrl: string; connectedAt: string };
 
 function Broker() {
   const [broker, setBroker] = useState("Headway");
@@ -27,6 +27,7 @@ function Broker() {
   const [login, setLogin] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [bridgeUrl, setBridgeUrl] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [saved, setSaved] = useState<Saved | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,11 @@ function Broker() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("sc_broker");
-      if (raw) setSaved(JSON.parse(raw));
+      if (raw) {
+        const s = JSON.parse(raw) as Saved;
+        setSaved(s);
+        if (s.bridgeUrl) setBridgeUrl(s.bridgeUrl);
+      }
     } catch { /* ignore */ }
   }, []);
 
@@ -51,6 +56,7 @@ function Broker() {
     }
     const payload: Saved = {
       broker, server, login: login.trim(), name: name.trim(),
+      bridgeUrl: bridgeUrl.trim(),
       connectedAt: new Date().toISOString(),
     };
     localStorage.setItem("sc_broker", JSON.stringify(payload));
