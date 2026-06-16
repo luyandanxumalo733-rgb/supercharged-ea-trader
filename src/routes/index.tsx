@@ -151,9 +151,10 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
+  { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
@@ -165,7 +166,7 @@ const MENU_ITEMS: Array<{
   { icon: HelpCircle,      label: "Support",           color: "oklch(0.70 0.18 50)"  },
 ];
 
-function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+function SideMenu({ open, onClose, themeId, setThemeId }: { open: boolean; onClose: () => void; themeId: string; setThemeId: (id: string) => void }) {
   return (
     <>
       <div
@@ -173,7 +174,7 @@ function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
         className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
       />
       <aside
-        className={`fixed right-0 top-0 z-50 h-full w-72 transform border-l border-white/10 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed right-0 top-0 z-50 h-full w-80 transform overflow-y-auto border-l border-white/10 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
         style={{
           background:
             "linear-gradient(180deg, oklch(0.22 0.06 265) 0%, oklch(0.16 0.05 260) 100%)",
@@ -188,6 +189,30 @@ function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             <X className="h-4 w-4" />
           </button>
         </div>
+
+        <div className="border-b border-white/10 px-4 py-4">
+          <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+            <Palette className="h-3.5 w-3.5" /> Background Theme
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setThemeId(t.id)}
+                className={`group rounded-xl border p-2 text-left transition ${themeId === t.id ? "border-white/40" : "border-white/10 hover:border-white/25"}`}
+                style={{ background: t.bg }}
+              >
+                <div className="flex gap-1">
+                  {t.swatch.map((c, i) => (
+                    <span key={i} className="h-4 w-4 rounded-full ring-1 ring-white/20" style={{ background: c }} />
+                  ))}
+                </div>
+                <div className="mt-1.5 text-[10px] font-medium text-white/90">{t.name}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <nav className="space-y-1 p-3">
           {MENU_ITEMS.map(({ icon: Icon, label, color, to }) => {
             const inner = (
