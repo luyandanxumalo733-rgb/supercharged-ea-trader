@@ -1,4 +1,5 @@
-import { createFileRoute, Link, useServerFn } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
 import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap } from "lucide-react";
@@ -24,6 +25,8 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
   { id: "mono",     name: "Carbon",        bg: "oklch(0.12 0.01 260)", brand: "oklch(0.78 0.05 260)", swatch: ["#0a0a0c", "#26272b", "#a9adb8"] },
   { id: "gold",     name: "Royal Gold",    bg: "oklch(0.14 0.04 80)",  brand: "oklch(0.78 0.16 85)",  swatch: ["#1a1206", "#574012", "#f5c542"] },
 ];
+
+type Cfg = { enabled: boolean; lot: string; tp: string; sl: string };
 
 function Logo() {
   return (
