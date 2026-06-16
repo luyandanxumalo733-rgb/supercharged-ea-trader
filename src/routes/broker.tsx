@@ -171,6 +171,19 @@ function Broker() {
             </div>
           </label>
 
+          <label className="block">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">MT5/MT4 Bridge URL (optional)</span>
+            <input
+              value={bridgeUrl}
+              onChange={(e) => setBridgeUrl(e.target.value)}
+              placeholder="https://your-bridge.example.com"
+              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
+            />
+            <span className="mt-1 block text-[10px] text-muted-foreground">
+              URL of your self-hosted MT5/MT4 bridge that accepts POST /order. Required for instant execution.
+            </span>
+          </label>
+
           {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
           <button
