@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SymbolsRouteImport } from './routes/symbols'
 import { Route as BrokerRouteImport } from './routes/broker'
 import { Route as AnalyzerRouteImport } from './routes/analyzer'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SymbolsRoute = SymbolsRouteImport.update({
+  id: '/symbols',
+  path: '/symbols',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrokerRoute = BrokerRouteImport.update({
   id: '/broker',
   path: '/broker',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyzer': typeof AnalyzerRoute
   '/broker': typeof BrokerRoute
+  '/symbols': typeof SymbolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyzer': typeof AnalyzerRoute
   '/broker': typeof BrokerRoute
+  '/symbols': typeof SymbolsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyzer': typeof AnalyzerRoute
   '/broker': typeof BrokerRoute
+  '/symbols': typeof SymbolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyzer' | '/broker'
+  fullPaths: '/' | '/analyzer' | '/broker' | '/symbols'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyzer' | '/broker'
-  id: '__root__' | '/' | '/analyzer' | '/broker'
+  to: '/' | '/analyzer' | '/broker' | '/symbols'
+  id: '__root__' | '/' | '/analyzer' | '/broker' | '/symbols'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzerRoute: typeof AnalyzerRoute
   BrokerRoute: typeof BrokerRoute
+  SymbolsRoute: typeof SymbolsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/symbols': {
+      id: '/symbols'
+      path: '/symbols'
+      fullPath: '/symbols'
+      preLoaderRoute: typeof SymbolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/broker': {
       id: '/broker'
       path: '/broker'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzerRoute: AnalyzerRoute,
   BrokerRoute: BrokerRoute,
+  SymbolsRoute: SymbolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
