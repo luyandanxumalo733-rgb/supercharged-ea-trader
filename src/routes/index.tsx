@@ -26,7 +26,7 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
   { id: "gold",     name: "Royal Gold",    bg: "oklch(0.14 0.04 80)",  brand: "oklch(0.78 0.16 85)",  swatch: ["#1a1206", "#574012", "#f5c542"] },
 ];
 
-type Cfg = { enabled: boolean; lot: string; tp: string; sl: string };
+// (Symbol config lives in /symbols route via localStorage `sc_symbols`)
 
 function Logo() {
   return (
