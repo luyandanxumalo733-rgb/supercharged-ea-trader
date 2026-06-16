@@ -1,24 +1,28 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useServerFn } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap } from "lucide-react";
+import { executeTrade } from "@/lib/execute-trade.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SuperCharged Algo EA" },
-      { name: "description", content: "SuperCharged Algo EA — mobile control panel for multi-pair algorithmic trading." },
-      { property: "og:title", content: "SuperCharged Algo EA" },
-      { property: "og:description", content: "Mobile EA scanner and controller for all FX pairs." },
+      { title: "SuperCharged EA V1.0" },
+      { name: "description", content: "SuperCharged EA V1.0 — 99.9% high-spread mobile control panel for instant MT5/MT4 execution." },
+      { property: "og:title", content: "SuperCharged EA V1.0" },
+      { property: "og:description", content: "Mobile EA scanner & MT5 trader with TP/SL on every trade." },
     ],
   }),
   component: Index,
 });
 
-const PAIRS = [
-  "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD",
-  "EURGBP", "EURJPY", "GBPJPY", "AUDJPY", "EURAUD", "GBPAUD", "XAUUSD",
-  "XAGUSD", "BTCUSD", "ETHUSD",
+const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatch: string[] }> = [
+  { id: "midnight", name: "Midnight Blue", bg: "oklch(0.13 0.04 260)", brand: "oklch(0.62 0.22 255)", swatch: ["#0b1230", "#1d2b6b", "#3b82f6"] },
+  { id: "neon",     name: "Neon Cyber",    bg: "oklch(0.12 0.05 300)", brand: "oklch(0.72 0.25 320)", swatch: ["#1a0a2e", "#5b0ea8", "#ff2bd6"] },
+  { id: "forest",   name: "Emerald",       bg: "oklch(0.14 0.05 160)", brand: "oklch(0.68 0.20 160)", swatch: ["#06231d", "#0c5a47", "#22d3a0"] },
+  { id: "sunset",   name: "Sunset",        bg: "oklch(0.16 0.07 30)",  brand: "oklch(0.70 0.22 30)",  swatch: ["#2a0e0a", "#7a2417", "#ff7a3a"] },
+  { id: "mono",     name: "Carbon",        bg: "oklch(0.12 0.01 260)", brand: "oklch(0.78 0.05 260)", swatch: ["#0a0a0c", "#26272b", "#a9adb8"] },
+  { id: "gold",     name: "Royal Gold",    bg: "oklch(0.14 0.04 80)",  brand: "oklch(0.78 0.16 85)",  swatch: ["#1a1206", "#574012", "#f5c542"] },
 ];
 
 function Logo() {
