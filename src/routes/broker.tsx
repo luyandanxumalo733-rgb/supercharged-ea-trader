@@ -19,7 +19,7 @@ const HEADWAY_SERVERS = [
   "HeadwayInvest-Live 3",
 ];
 
-type Saved = { broker: string; server: string; login: string; name: string; connectedAt: string };
+type Saved = { broker: string; server: string; login: string; name: string; bridgeUrl: string; connectedAt: string };
 
 function Broker() {
   const [broker, setBroker] = useState("Headway");
@@ -27,6 +27,7 @@ function Broker() {
   const [login, setLogin] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [bridgeUrl, setBridgeUrl] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [saved, setSaved] = useState<Saved | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,11 @@ function Broker() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("sc_broker");
-      if (raw) setSaved(JSON.parse(raw));
+      if (raw) {
+        const s = JSON.parse(raw) as Saved;
+        setSaved(s);
+        if (s.bridgeUrl) setBridgeUrl(s.bridgeUrl);
+      }
     } catch { /* ignore */ }
   }, []);
 
@@ -51,6 +56,7 @@ function Broker() {
     }
     const payload: Saved = {
       broker, server, login: login.trim(), name: name.trim(),
+      bridgeUrl: bridgeUrl.trim(),
       connectedAt: new Date().toISOString(),
     };
     localStorage.setItem("sc_broker", JSON.stringify(payload));
@@ -163,6 +169,19 @@ function Broker() {
                 {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+          </label>
+
+          <label className="block">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">MT5/MT4 Bridge URL (optional)</span>
+            <input
+              value={bridgeUrl}
+              onChange={(e) => setBridgeUrl(e.target.value)}
+              placeholder="https://your-bridge.example.com"
+              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
+            />
+            <span className="mt-1 block text-[10px] text-muted-foreground">
+              URL of your self-hosted MT5/MT4 bridge that accepts POST /order. Required for instant execution.
+            </span>
           </label>
 
           {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
