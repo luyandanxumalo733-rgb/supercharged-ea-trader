@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Sparkles, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Sparkles, Eye, EyeOff, Copy, Check, Zap } from "lucide-react";
+import robotLogo from "@/assets/robot-logo.png";
 
 export const Route = createFileRoute("/broker")({
   head: () => ({
@@ -12,18 +13,15 @@ export const Route = createFileRoute("/broker")({
   component: Broker,
 });
 
-const HEADWAY_SERVERS = [
-  "HeadwayInvest-Live",
-  "HeadwayInvest-Demo",
-  "HeadwayInvest-Live 2",
-  "HeadwayInvest-Live 3",
-];
+const HEADWAY_LIVE = ["HeadwayInvest-Live", "HeadwayInvest-Live 2", "HeadwayInvest-Live 3"];
+const HEADWAY_DEMO = ["HeadwayInvest-Demo"];
 
 type Saved = { broker: string; server: string; login: string; name: string; bridgeUrl: string; connectedAt: string };
 
 function Broker() {
   const [broker, setBroker] = useState("Headway");
-  const [server, setServer] = useState(HEADWAY_SERVERS[0]);
+  const [accountType, setAccountType] = useState<"REAL" | "DEMO">("REAL");
+  const [server, setServer] = useState(HEADWAY_LIVE[0]);
   const [login, setLogin] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +29,7 @@ function Broker() {
   const [showPass, setShowPass] = useState(false);
   const [saved, setSaved] = useState<Saved | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     try {
@@ -42,6 +41,12 @@ function Broker() {
       }
     } catch { /* ignore */ }
   }, []);
+
+  const suggestedBridge = `https://bridge.supercharged-ea.app/mt5/${accountType.toLowerCase()}/${login || "ACCOUNT"}`;
+
+  async function copySuggested() {
+    try { await navigator.clipboard.writeText(suggestedBridge); setCopied(true); setTimeout(() => setCopied(false), 1200); } catch { /* */ }
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,9 +89,10 @@ function Broker() {
         </header>
 
         <section
-          className="mt-5 overflow-hidden rounded-2xl border border-white/10 p-4"
+          className="relative mt-5 overflow-hidden rounded-2xl border border-white/10 p-4"
           style={{ background: "linear-gradient(135deg, oklch(0.30 0.14 255 / 0.6), oklch(0.20 0.08 260))" }}
         >
+          <img src={robotLogo} alt="" aria-hidden className="pointer-events-none absolute -right-4 -bottom-6 h-32 w-32 opacity-10" />
           <div className="flex items-center gap-2 text-[oklch(0.85_0.16_85)]">
             <Sparkles className="h-4 w-4" />
             <span className="text-[10px] uppercase tracking-widest">Recommended</span>
@@ -95,6 +101,21 @@ function Broker() {
           <p className="mt-1 text-sm text-muted-foreground">
             SuperCharged Algo EA is optimized for Headway. Low spreads, MT5 support, and verified server lists below.
           </p>
+          <div className="mt-3 inline-flex overflow-hidden rounded-full border border-white/15">
+            {(["REAL", "DEMO"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => {
+                  setAccountType(t);
+                  setServer(t === "REAL" ? HEADWAY_LIVE[0] : HEADWAY_DEMO[0]);
+                }}
+                className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest transition ${accountType === t ? "bg-[oklch(0.62_0.22_255)] text-white" : "text-muted-foreground hover:bg-white/5"}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </section>
 
         {saved && (
@@ -130,7 +151,7 @@ function Broker() {
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">MT5 Server</span>
             {broker === "Headway" ? (
               <select value={server} onChange={(e) => setServer(e.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm">
-                {HEADWAY_SERVERS.map((s) => <option key={s}>{s}</option>)}
+                {(accountType === "REAL" ? HEADWAY_LIVE : HEADWAY_DEMO).map((s) => <option key={s}>{s}</option>)}
               </select>
             ) : (
               <input value={server} onChange={(e) => setServer(e.target.value)} placeholder="Broker-Server-Name" className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm" />
@@ -172,16 +193,32 @@ function Broker() {
           </label>
 
           <label className="block">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">MT5/MT4 Bridge URL (optional)</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">MT5/MT4 Bridge URL — 24/7 execution</span>
             <input
               value={bridgeUrl}
               onChange={(e) => setBridgeUrl(e.target.value)}
               placeholder="https://your-bridge.example.com"
               className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
             />
-            <span className="mt-1 block text-[10px] text-muted-foreground">
-              URL of your self-hosted MT5/MT4 bridge that accepts POST /order. Required for instant execution.
-            </span>
+            <div className="mt-2 rounded-lg border border-white/10 bg-black/30 p-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Suggested Bridge URL</div>
+                  <div className="truncate font-mono text-[11px] text-[oklch(0.85_0.18_230)]">{suggestedBridge}</div>
+                </div>
+                <div className="flex gap-1">
+                  <button type="button" onClick={copySuggested} className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10">
+                    {copied ? <Check className="h-3.5 w-3.5 text-[var(--success)]" /> : <Copy className="h-3.5 w-3.5" />}
+                  </button>
+                  <button type="button" onClick={() => setBridgeUrl(suggestedBridge)} className="rounded-md border border-white/10 bg-white/5 px-2 text-[10px] font-semibold uppercase tracking-widest hover:bg-white/10">
+                    Use
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+              The Bridge URL connects this mobile EA to your MT5 terminal. With Algo Trading ON, orders fire every 60s and TP/SL are attached automatically. Run the bridge on a VPS for true 24/7 execution.
+            </p>
           </label>
 
           {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
@@ -199,6 +236,19 @@ function Broker() {
             the password is kept in memory for this session and not persisted.
           </p>
         </form>
+
+        <section className="mt-4 rounded-2xl border border-[oklch(0.55_0.22_255_/_0.35)] bg-[oklch(0.22_0.10_260_/_0.5)] p-4">
+          <div className="flex items-center gap-2 text-[oklch(0.78_0.20_230)]">
+            <Zap className="h-4 w-4" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest">Algo Trading — How it links to MT5</span>
+          </div>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-relaxed text-muted-foreground">
+            <li>In MetaTrader 5: <span className="text-foreground">Tools → Options → Expert Advisors → Allow WebRequest</span> for your bridge URL.</li>
+            <li>Run the MT5 bridge on a VPS (or local PC kept online) so the EA can fire 24/7.</li>
+            <li>Paste the bridge URL above, link your Headway {accountType.toLowerCase()} account, then toggle <span className="text-foreground">Algo Trading</span> on the dashboard.</li>
+            <li>The EA sends orders every minute with TP/SL attached and closes positions automatically per your symbol settings.</li>
+          </ol>
+        </section>
       </div>
     </div>
   );
