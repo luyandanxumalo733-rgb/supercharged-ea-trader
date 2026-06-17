@@ -540,6 +540,20 @@ function Index() {
             </div>
           </Link>
         </div>
+
+        <Link
+          to="/mentor"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.70 0.22 290), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.70 0.22 290)" }}>
+            <KeyRound className="h-4 w-4 text-white" />
+          </span>
+          <div className="flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Host another robot</div>
+            <div className="text-sm font-semibold">Mentor Keys — generate licenses</div>
+          </div>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
+        </Link>
       </div>
     </div>
   );
