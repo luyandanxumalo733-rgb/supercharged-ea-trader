@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle } from "lucide-react";
 import { analyzeChart } from "@/lib/analyze-chart.functions";
+import robotLogo from "@/assets/robot-logo.png";
 
 export const Route = createFileRoute("/analyzer")({
   head: () => ({
@@ -62,8 +63,14 @@ function Analyzer() {
   const SignalIcon = result?.signal === "BUY" ? TrendingUp : result?.signal === "SELL" ? TrendingDown : MinusCircle;
 
   return (
-    <div className="min-h-screen text-foreground" style={{ background: "radial-gradient(80% 50% at 50% 0%, oklch(0.28 0.12 260 / 0.6), transparent), oklch(0.13 0.04 260)" }}>
-      <div className="mx-auto max-w-md px-4 pb-24 pt-6">
+    <div className="relative min-h-screen overflow-hidden text-foreground" style={{ background: "radial-gradient(80% 50% at 50% 0%, oklch(0.28 0.12 260 / 0.6), transparent), oklch(0.13 0.04 260)" }}>
+      <img
+        src={robotLogo}
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-32 -z-0 h-[420px] w-[420px] -translate-x-1/2 opacity-[0.06] blur-[1px]"
+      />
+      <div className="relative z-10 mx-auto max-w-md px-4 pb-24 pt-6">
         <header className="flex items-center gap-3">
           <Link to="/" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10">
             <ArrowLeft className="h-4 w-4" />
@@ -71,6 +78,7 @@ function Analyzer() {
           <div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.18_230)]">AI Vision</div>
             <h1 className="text-lg font-bold">Chart Analyzer</h1>
+            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Powered by Algo Trading</div>
           </div>
         </header>
 
