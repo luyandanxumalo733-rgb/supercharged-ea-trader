@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 
 export const Route = createFileRoute("/")({
@@ -32,7 +32,7 @@ function Logo() {
   return (
     <div className="flex items-center gap-3">
       <div
-        className="relative grid h-12 w-12 place-items-center rounded-2xl"
+        className="relative grid h-12 w-12 place-items-center rounded-full"
         style={{
           background:
             "radial-gradient(circle at 50% 40%, oklch(0.55 0.22 255 / 0.9), oklch(0.20 0.10 260) 70%)",
@@ -41,7 +41,7 @@ function Logo() {
         }}
       >
         <span
-          className="pointer-events-none absolute inset-0 rounded-2xl"
+          className="pointer-events-none absolute inset-0 rounded-full"
           style={{
             background:
               "radial-gradient(circle at 50% 100%, oklch(0.78 0.18 230 / 0.6), transparent 60%)",
@@ -52,7 +52,7 @@ function Logo() {
           alt="SuperCharged robot mascot"
           width={48}
           height={48}
-          className="relative h-11 w-11 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
+          className="relative h-10 w-10 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
         />
       </div>
       <div className="leading-tight">
@@ -151,12 +151,13 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker" | "/symbols";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
+  { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
   { icon: Wallet,          label: "Portfolio",         color: "oklch(0.68 0.22 340)" },
   { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)" },
@@ -295,6 +296,11 @@ function RobotHero({ running }: { running: boolean }) {
         </h2>
         <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">V 1.0</div>
 
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[oklch(0.78_0.20_230)]">
+          <Zap className="h-3 w-3" style={{ color: "oklch(0.78 0.20 230)" }} />
+          <span>Powered by Algo Trading</span>
+        </div>
+
         <div className="mt-3 flex items-center gap-2 rounded-full border border-[oklch(0.60_0.20_30_/_0.4)] bg-[oklch(0.30_0.16_30_/_0.4)] px-3 py-1">
           <Zap className="h-3.5 w-3.5 text-[oklch(0.85_0.20_30)]" />
           <span className="text-[11px] font-semibold tracking-widest text-[oklch(0.92_0.16_60)]">99.9% HIGH SPREADS</span>
@@ -313,6 +319,7 @@ function Index() {
   const [brokerConnected, setBrokerConnected] = useState(false);
   const [themeId, setThemeIdState] = useState("midnight");
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
+  const [algoOn, setAlgoOn] = useState(false);
   const fire = useServerFn(executeTrade);
 
   useEffect(() => {
@@ -320,6 +327,8 @@ function Index() {
       setBrokerConnected(!!localStorage.getItem("sc_broker"));
       const t = localStorage.getItem("sc_theme");
       if (t) setThemeIdState(t);
+      const a = localStorage.getItem("sc_algo");
+      if (a === "1") setAlgoOn(true);
     } catch { /* ignore */ }
   }, [menuOpen]);
 
@@ -329,6 +338,21 @@ function Index() {
   };
 
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  function toggleAlgo() {
+    const next = !algoOn;
+    setAlgoOn(next);
+    try { localStorage.setItem("sc_algo", next ? "1" : "0"); } catch { /* */ }
+    if (next && !running) handleStart();
+  }
+
+  // 24/7 auto-execute loop: when Algo Trading is ON, fire orders every 60s.
+  useEffect(() => {
+    if (!algoOn) return;
+    const id = setInterval(() => { handleStart(); }, 60_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [algoOn]);
 
   async function handleStart() {
     setRunning(true);
@@ -396,6 +420,34 @@ function Index() {
         <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} themeId={themeId} setThemeId={setThemeId} />
 
         <RobotHero running={running} />
+
+        <section className="mt-4 flex items-center justify-between rounded-2xl border border-[oklch(0.55_0.22_255_/_0.35)] bg-[oklch(0.22_0.10_260_/_0.5)] p-3">
+          <div className="flex items-center gap-3">
+            <span
+              className="grid h-10 w-10 place-items-center rounded-xl"
+              style={{
+                background: algoOn ? "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))" : "oklch(0.20 0.05 260)",
+                boxShadow: algoOn ? "0 0 18px -2px oklch(0.62 0.22 255)" : "none",
+              }}
+            >
+              <Power className="h-5 w-5 text-white" />
+            </span>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Algo Trading</div>
+              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : "Disabled"}</div>
+            </div>
+          </div>
+          <button
+            onClick={toggleAlgo}
+            aria-pressed={algoOn}
+            className={`relative h-7 w-12 rounded-full border transition ${algoOn ? "border-[oklch(0.62_0.22_255)] bg-[oklch(0.40_0.20_255)]" : "border-white/20 bg-white/10"}`}
+          >
+            <span
+              className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all"
+              style={{ left: algoOn ? "calc(100% - 1.625rem)" : "0.125rem", boxShadow: algoOn ? "0 0 10px oklch(0.78 0.20 230)" : "none" }}
+            />
+          </button>
+        </section>
 
         {!brokerConnected && (
           <Link
@@ -488,6 +540,20 @@ function Index() {
             </div>
           </Link>
         </div>
+
+        <Link
+          to="/mentor"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.70 0.22 290), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.70 0.22 290)" }}>
+            <KeyRound className="h-4 w-4 text-white" />
+          </span>
+          <div className="flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Host another robot</div>
+            <div className="text-sm font-semibold">Mentor Keys — generate licenses</div>
+          </div>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
+        </Link>
       </div>
     </div>
   );
