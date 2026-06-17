@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 
 export const Route = createFileRoute("/")({
@@ -151,12 +151,13 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
+  { icon: Server,          label: "MT5 Bridge",        color: "oklch(0.70 0.20 200)", to: "/bridge" },
   { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
   { icon: Wallet,          label: "Portfolio",         color: "oklch(0.68 0.22 340)" },
@@ -290,15 +291,23 @@ function RobotHero({ running }: { running: boolean }) {
           />
         </div>
 
-        <div className="mt-3 text-[10px] uppercase tracking-[0.4em] text-[oklch(0.78_0.18_230)]">Algo Robot</div>
         <h2 className="text-2xl font-black uppercase tracking-wide text-white drop-shadow-[0_0_12px_var(--brand)]">
           SuperCharged EA
         </h2>
         <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">V 1.0</div>
 
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[oklch(0.78_0.20_230)]">
-          <Zap className="h-3 w-3" style={{ color: "oklch(0.78 0.20 230)" }} />
-          <span>Powered by Algo Trading</span>
+        <div
+          className="mt-3 flex items-center justify-center gap-2 rounded-full border px-4 py-1.5"
+          style={{
+            borderColor: "oklch(0.62 0.22 255 / 0.55)",
+            background: "linear-gradient(135deg, oklch(0.30 0.18 255 / 0.55), oklch(0.20 0.12 260 / 0.4))",
+            boxShadow: "0 0 22px -4px oklch(0.62 0.22 255 / 0.9)",
+          }}
+        >
+          <Zap className="h-3.5 w-3.5" style={{ color: "oklch(0.85 0.20 230)" }} />
+          <span className="text-[12px] font-extrabold uppercase tracking-[0.32em] text-[oklch(0.85_0.20_230)] drop-shadow-[0_0_8px_oklch(0.62_0.22_255)]">
+            Powered by Algo Trading
+          </span>
         </div>
 
         <div className="mt-3 flex items-center gap-2 rounded-full border border-[oklch(0.60_0.20_30_/_0.4)] bg-[oklch(0.30_0.16_30_/_0.4)] px-3 py-1">
@@ -398,14 +407,27 @@ function Index() {
 
   return (
     <div
-      className="min-h-screen text-foreground transition-colors"
+      className="relative min-h-screen text-foreground transition-colors"
       style={{
         ["--app-bg" as string]: theme.bg,
         ["--brand" as string]: theme.brand,
         background: `radial-gradient(80% 50% at 50% 0%, ${theme.brand.replace(")", " / 0.35)")} , transparent), ${theme.bg}`,
       }}
     >
-      <div className="mx-auto max-w-md px-4 pb-32 pt-6">
+      {/* Robot logo as faint full-page background */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage: `url(${robotLogo})`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center 55%",
+          backgroundSize: "min(85vw, 520px)",
+          opacity: 0.07,
+          filter: "drop-shadow(0 0 40px var(--brand))",
+        }}
+      />
+      <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
         <header className="flex items-center justify-between">
           <Logo />
           <button
