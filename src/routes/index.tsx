@@ -296,6 +296,11 @@ function RobotHero({ running }: { running: boolean }) {
         </h2>
         <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">V 1.0</div>
 
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[oklch(0.78_0.20_230)]">
+          <Zap className="h-3 w-3" style={{ color: "oklch(0.78 0.20 230)" }} />
+          <span>Powered by Algo Trading</span>
+        </div>
+
         <div className="mt-3 flex items-center gap-2 rounded-full border border-[oklch(0.60_0.20_30_/_0.4)] bg-[oklch(0.30_0.16_30_/_0.4)] px-3 py-1">
           <Zap className="h-3.5 w-3.5 text-[oklch(0.85_0.20_30)]" />
           <span className="text-[11px] font-semibold tracking-widest text-[oklch(0.92_0.16_60)]">99.9% HIGH SPREADS</span>
