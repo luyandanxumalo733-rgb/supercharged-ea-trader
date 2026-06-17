@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 
 export const Route = createFileRoute("/")({
@@ -32,7 +32,7 @@ function Logo() {
   return (
     <div className="flex items-center gap-3">
       <div
-        className="relative grid h-12 w-12 place-items-center rounded-2xl"
+        className="relative grid h-12 w-12 place-items-center rounded-full"
         style={{
           background:
             "radial-gradient(circle at 50% 40%, oklch(0.55 0.22 255 / 0.9), oklch(0.20 0.10 260) 70%)",
@@ -41,7 +41,7 @@ function Logo() {
         }}
       >
         <span
-          className="pointer-events-none absolute inset-0 rounded-2xl"
+          className="pointer-events-none absolute inset-0 rounded-full"
           style={{
             background:
               "radial-gradient(circle at 50% 100%, oklch(0.78 0.18 230 / 0.6), transparent 60%)",
@@ -52,7 +52,7 @@ function Logo() {
           alt="SuperCharged robot mascot"
           width={48}
           height={48}
-          className="relative h-11 w-11 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
+          className="relative h-10 w-10 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
         />
       </div>
       <div className="leading-tight">
@@ -157,6 +157,7 @@ const MENU_ITEMS: Array<{
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
+  { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
   { icon: Wallet,          label: "Portfolio",         color: "oklch(0.68 0.22 340)" },
   { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)" },
