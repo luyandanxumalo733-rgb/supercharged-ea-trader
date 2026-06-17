@@ -319,6 +319,7 @@ function Index() {
   const [brokerConnected, setBrokerConnected] = useState(false);
   const [themeId, setThemeIdState] = useState("midnight");
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
+  const [algoOn, setAlgoOn] = useState(false);
   const fire = useServerFn(executeTrade);
 
   useEffect(() => {
@@ -326,6 +327,8 @@ function Index() {
       setBrokerConnected(!!localStorage.getItem("sc_broker"));
       const t = localStorage.getItem("sc_theme");
       if (t) setThemeIdState(t);
+      const a = localStorage.getItem("sc_algo");
+      if (a === "1") setAlgoOn(true);
     } catch { /* ignore */ }
   }, [menuOpen]);
 
@@ -335,6 +338,21 @@ function Index() {
   };
 
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  function toggleAlgo() {
+    const next = !algoOn;
+    setAlgoOn(next);
+    try { localStorage.setItem("sc_algo", next ? "1" : "0"); } catch { /* */ }
+    if (next && !running) handleStart();
+  }
+
+  // 24/7 auto-execute loop: when Algo Trading is ON, fire orders every 60s.
+  useEffect(() => {
+    if (!algoOn) return;
+    const id = setInterval(() => { handleStart(); }, 60_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [algoOn]);
 
   async function handleStart() {
     setRunning(true);
@@ -402,6 +420,34 @@ function Index() {
         <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} themeId={themeId} setThemeId={setThemeId} />
 
         <RobotHero running={running} />
+
+        <section className="mt-4 flex items-center justify-between rounded-2xl border border-[oklch(0.55_0.22_255_/_0.35)] bg-[oklch(0.22_0.10_260_/_0.5)] p-3">
+          <div className="flex items-center gap-3">
+            <span
+              className="grid h-10 w-10 place-items-center rounded-xl"
+              style={{
+                background: algoOn ? "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))" : "oklch(0.20 0.05 260)",
+                boxShadow: algoOn ? "0 0 18px -2px oklch(0.62 0.22 255)" : "none",
+              }}
+            >
+              <Power className="h-5 w-5 text-white" />
+            </span>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Algo Trading</div>
+              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : "Disabled"}</div>
+            </div>
+          </div>
+          <button
+            onClick={toggleAlgo}
+            aria-pressed={algoOn}
+            className={`relative h-7 w-12 rounded-full border transition ${algoOn ? "border-[oklch(0.62_0.22_255)] bg-[oklch(0.40_0.20_255)]" : "border-white/20 bg-white/10"}`}
+          >
+            <span
+              className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all"
+              style={{ left: algoOn ? "calc(100% - 1.625rem)" : "0.125rem", boxShadow: algoOn ? "0 0 10px oklch(0.78 0.20 230)" : "none" }}
+            />
+          </button>
+        </section>
 
         {!brokerConnected && (
           <Link
