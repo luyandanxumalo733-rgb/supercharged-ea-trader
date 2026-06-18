@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SymbolsRouteImport } from './routes/symbols'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as MentorRouteImport } from './routes/mentor'
 import { Route as BrokerRouteImport } from './routes/broker'
 import { Route as BridgeRouteImport } from './routes/bridge'
@@ -19,6 +20,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SymbolsRoute = SymbolsRouteImport.update({
   id: '/symbols',
   path: '/symbols',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorRoute = MentorRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
   '/mentor': typeof MentorRoute
+  '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
   '/mentor': typeof MentorRoute
+  '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
 export interface FileRoutesById {
@@ -70,13 +78,28 @@ export interface FileRoutesById {
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
   '/mentor': typeof MentorRoute
+  '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyzer' | '/bridge' | '/broker' | '/mentor' | '/symbols'
+  fullPaths:
+    | '/'
+    | '/analyzer'
+    | '/bridge'
+    | '/broker'
+    | '/mentor'
+    | '/setup'
+    | '/symbols'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyzer' | '/bridge' | '/broker' | '/mentor' | '/symbols'
+  to:
+    | '/'
+    | '/analyzer'
+    | '/bridge'
+    | '/broker'
+    | '/mentor'
+    | '/setup'
+    | '/symbols'
   id:
     | '__root__'
     | '/'
@@ -84,6 +107,7 @@ export interface FileRouteTypes {
     | '/bridge'
     | '/broker'
     | '/mentor'
+    | '/setup'
     | '/symbols'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +117,7 @@ export interface RootRouteChildren {
   BridgeRoute: typeof BridgeRoute
   BrokerRoute: typeof BrokerRoute
   MentorRoute: typeof MentorRoute
+  SetupRoute: typeof SetupRoute
   SymbolsRoute: typeof SymbolsRoute
 }
 
@@ -103,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/symbols'
       fullPath: '/symbols'
       preLoaderRoute: typeof SymbolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentor': {
@@ -149,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   BridgeRoute: BridgeRoute,
   BrokerRoute: BrokerRoute,
   MentorRoute: MentorRoute,
+  SetupRoute: SetupRoute,
   SymbolsRoute: SymbolsRoute,
 }
 export const routeTree = rootRouteImport
