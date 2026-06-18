@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Copy, KeyRound, Plus, Trash2, Check } from "lucide-react";
+import { ArrowLeft, Copy, KeyRound, Plus, Trash2, Check, Lock, Fingerprint, Eye, EyeOff } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
 
 export const Route = createFileRoute("/mentor")({
@@ -36,6 +36,8 @@ function Mentor() {
   const [keys, setKeys] = useState<MentorKey[]>([]);
   const [label, setLabel] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
+  const [reveal, setReveal] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     try {
@@ -43,6 +45,10 @@ function Mentor() {
       if (raw) setKeys(JSON.parse(raw));
     } catch { /* */ }
   }, []);
+
+  if (!unlocked) {
+    return <PasscodeGate onUnlock={() => setUnlocked(true)} />;
+  }
 
   function persist(next: MentorKey[]) {
     setKeys(next);
@@ -135,8 +141,16 @@ function Mentor() {
                 <div key={row.id} className="mt-2 flex items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2">
                   <div className="flex-1">
                     <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{row.label}</div>
-                    <div className="font-mono text-sm tracking-wider text-[oklch(0.85_0.18_230)]">{row.val}</div>
+                    <div className="font-mono text-sm tracking-wider text-[oklch(0.85_0.18_230)]">
+                      {reveal[row.id] ? row.val : "•".repeat(Math.max(8, row.val.length))}
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setReveal((r) => ({ ...r, [row.id]: !r[row.id] }))}
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/5 hover:bg-white/10"
+                  >
+                    {reveal[row.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                   <button onClick={() => copy(row.val, row.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/5 hover:bg-white/10">
                     {copied === row.id ? <Check className="h-4 w-4 text-[var(--success)]" /> : <Copy className="h-4 w-4" />}
                   </button>
