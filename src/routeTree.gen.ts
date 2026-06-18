@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SymbolsRouteImport } from './routes/symbols'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as MentorRouteImport } from './routes/mentor'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as BrokerRouteImport } from './routes/broker'
 import { Route as BridgeRouteImport } from './routes/bridge'
 import { Route as AnalyzerRouteImport } from './routes/analyzer'
@@ -21,9 +23,19 @@ const SymbolsRoute = SymbolsRouteImport.update({
   path: '/symbols',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MentorRoute = MentorRouteImport.update({
   id: '/mentor',
   path: '/mentor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrokerRoute = BrokerRouteImport.update({
@@ -52,7 +64,9 @@ export interface FileRoutesByFullPath {
   '/analyzer': typeof AnalyzerRoute
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
+  '/history': typeof HistoryRoute
   '/mentor': typeof MentorRoute
+  '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
 export interface FileRoutesByTo {
@@ -60,7 +74,9 @@ export interface FileRoutesByTo {
   '/analyzer': typeof AnalyzerRoute
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
+  '/history': typeof HistoryRoute
   '/mentor': typeof MentorRoute
+  '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
 export interface FileRoutesById {
@@ -69,21 +85,41 @@ export interface FileRoutesById {
   '/analyzer': typeof AnalyzerRoute
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
+  '/history': typeof HistoryRoute
   '/mentor': typeof MentorRoute
+  '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyzer' | '/bridge' | '/broker' | '/mentor' | '/symbols'
+  fullPaths:
+    | '/'
+    | '/analyzer'
+    | '/bridge'
+    | '/broker'
+    | '/history'
+    | '/mentor'
+    | '/setup'
+    | '/symbols'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyzer' | '/bridge' | '/broker' | '/mentor' | '/symbols'
+  to:
+    | '/'
+    | '/analyzer'
+    | '/bridge'
+    | '/broker'
+    | '/history'
+    | '/mentor'
+    | '/setup'
+    | '/symbols'
   id:
     | '__root__'
     | '/'
     | '/analyzer'
     | '/bridge'
     | '/broker'
+    | '/history'
     | '/mentor'
+    | '/setup'
     | '/symbols'
   fileRoutesById: FileRoutesById
 }
@@ -92,7 +128,9 @@ export interface RootRouteChildren {
   AnalyzerRoute: typeof AnalyzerRoute
   BridgeRoute: typeof BridgeRoute
   BrokerRoute: typeof BrokerRoute
+  HistoryRoute: typeof HistoryRoute
   MentorRoute: typeof MentorRoute
+  SetupRoute: typeof SetupRoute
   SymbolsRoute: typeof SymbolsRoute
 }
 
@@ -105,11 +143,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SymbolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mentor': {
       id: '/mentor'
       path: '/mentor'
       fullPath: '/mentor'
       preLoaderRoute: typeof MentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/broker': {
@@ -148,7 +200,9 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyzerRoute: AnalyzerRoute,
   BridgeRoute: BridgeRoute,
   BrokerRoute: BrokerRoute,
+  HistoryRoute: HistoryRoute,
   MentorRoute: MentorRoute,
+  SetupRoute: SetupRoute,
   SymbolsRoute: SymbolsRoute,
 }
 export const routeTree = rootRouteImport

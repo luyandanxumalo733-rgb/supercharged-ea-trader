@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server, Wifi, WifiOff, Rocket, CheckCircle2 } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
+import { pingBridge } from "@/lib/bridge.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -151,17 +152,18 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge" | "/setup" | "/history";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
   { icon: Server,          label: "MT5 Bridge",        color: "oklch(0.70 0.20 200)", to: "/bridge" },
+  { icon: Rocket,          label: "Setup Wizard",      color: "oklch(0.72 0.22 230)", to: "/setup" },
+  { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)", to: "/history" },
   { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
   { icon: Wallet,          label: "Portfolio",         color: "oklch(0.68 0.22 340)" },
-  { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)" },
   { icon: Bell,            label: "Alerts",            color: "oklch(0.70 0.15 290)" },
   { icon: Shield,          label: "Risk Manager",      color: "oklch(0.72 0.18 180)" },
   { icon: Settings,        label: "Settings",          color: "oklch(0.74 0.16 110)" },
@@ -329,7 +331,12 @@ function Index() {
   const [themeId, setThemeIdState] = useState("midnight");
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
   const [algoOn, setAlgoOn] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const [bridgeUrl, setBridgeUrl] = useState<string | null>(null);
+  const [heartbeat, setHeartbeat] = useState<{ ok: boolean; latencyMs: number; at: number } | null>(null);
+  const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
   const fire = useServerFn(executeTrade);
+  const heartbeatFn = useServerFn(pingBridge);
 
   useEffect(() => {
     try {
@@ -338,6 +345,9 @@ function Index() {
       if (t) setThemeIdState(t);
       const a = localStorage.getItem("sc_algo");
       if (a === "1") setAlgoOn(true);
+      setValidated(localStorage.getItem("sc_bridge_validated") === "1");
+      const b = localStorage.getItem("sc_broker");
+      if (b) { const j = JSON.parse(b); setBridgeUrl(j.bridgeUrl || null); }
     } catch { /* ignore */ }
   }, [menuOpen]);
 
@@ -349,6 +359,10 @@ function Index() {
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
 
   function toggleAlgo() {
+    if (!algoOn && !validated) {
+      setExec({ status: "Setup required", detail: "Run the Setup Wizard to validate the bridge before enabling 24/7." });
+      return;
+    }
     const next = !algoOn;
     setAlgoOn(next);
     try { localStorage.setItem("sc_algo", next ? "1" : "0"); } catch { /* */ }
@@ -362,6 +376,29 @@ function Index() {
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [algoOn]);
+
+  // Bridge heartbeat: ping /health every 10s while Algo is ON.
+  useEffect(() => {
+    if (!algoOn || !bridgeUrl) return;
+    let cancelled = false;
+    const tick = async () => {
+      const r = await heartbeatFn({ data: { bridgeUrl } }).catch(() => null);
+      if (cancelled || !r) return;
+      setHeartbeat({ ok: r.ok, latencyMs: r.latencyMs, at: Date.now() });
+    };
+    tick();
+    const id = setInterval(tick, 10_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [algoOn, bridgeUrl, heartbeatFn]);
+
+  function recordTrade(t: { symbol: string; side: "BUY" | "SELL"; lot: number; tp: number; sl: number; ok: boolean; status: number; attempts?: number; body?: string }) {
+    try {
+      const raw = localStorage.getItem("sc_trades");
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.unshift({ id: crypto.randomUUID(), ts: new Date().toISOString(), ...t });
+      localStorage.setItem("sc_trades", JSON.stringify(arr.slice(0, 200)));
+    } catch { /* */ }
+  }
 
   async function handleStart() {
     setRunning(true);
@@ -389,20 +426,23 @@ function Index() {
       return;
     }
     setExec({ status: `Sending ${active.length} orders to MT5…` });
-    const results = await Promise.all(active.map(([symbol, c]) =>
-      fire({ data: {
+    const results = await Promise.all(active.map(async ([symbol, c]) => {
+      const lot = Number(c.lot) || 0.01;
+      const tp  = Number(c.tp) || 30;
+      const sl  = Number(c.sl) || 20;
+      const r = await fire({ data: {
         bridgeUrl: broker!.bridgeUrl!,
         login: broker!.login,
         server: broker!.server,
-        symbol,
-        side: "BUY",
-        lot: Number(c.lot) || 0.01,
-        tpPips: Number(c.tp) || 30,
-        slPips: Number(c.sl) || 20,
-      } })
-    ));
+        symbol, side: "BUY", lot, tpPips: tp, slPips: sl,
+      } });
+      recordTrade({ symbol, side: "BUY", lot, tp, sl, ok: r.ok, status: r.status, attempts: r.attempts, body: r.body });
+      return { symbol, ...r };
+    }));
     const ok = results.filter((r) => r.ok).length;
-    setExec({ status: `Sent: ${ok}/${results.length} orders`, detail: ok === results.length ? "All TP/SL attached." : "Some failed — check bridge logs." });
+    const last = results[results.length - 1];
+    setLastTrade({ symbol: last.symbol, side: "BUY", ok: last.ok, at: Date.now() });
+    setExec({ status: `Sent: ${ok}/${results.length} orders`, detail: ok === results.length ? "All TP/SL attached." : "Some failed — bridge auto-retried, see Trade History." });
   }
 
   return (
@@ -456,7 +496,7 @@ function Index() {
             </span>
             <div>
               <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Algo Trading</div>
-              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : "Disabled"}</div>
+              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : validated ? "Disabled" : "Setup required"}</div>
             </div>
           </div>
           <button
@@ -470,6 +510,55 @@ function Index() {
             />
           </button>
         </section>
+
+        {!validated && (
+          <Link
+            to="/setup"
+            className="mt-3 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.22_230_/_0.5)] p-3 transition hover:brightness-110"
+            style={{ background: "linear-gradient(135deg, oklch(0.30 0.18 230 / 0.45), oklch(0.22 0.08 260))" }}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.62 0.22 230)" }}>
+              <Rocket className="h-5 w-5 text-white" />
+            </span>
+            <div className="flex-1">
+              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.18_230)]">Required</div>
+              <div className="text-sm font-semibold">Run Setup Wizard to validate bridge</div>
+            </div>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Start →</span>
+          </Link>
+        )}
+
+        {algoOn && (
+          <section className="mt-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3">
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Live Execution</div>
+              <div className="flex items-center gap-1.5 text-[10px]">
+                {heartbeat?.ok
+                  ? <><Wifi className="h-3.5 w-3.5 text-[var(--success)]" /><span>Bridge OK · {heartbeat.latencyMs}ms</span></>
+                  : <><WifiOff className="h-3.5 w-3.5 text-[var(--danger)]" /><span>{heartbeat ? "Bridge offline" : "Pinging…"}</span></>}
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Last action</div>
+                <div className="mt-0.5 font-mono">
+                  {lastTrade ? `${lastTrade.side} ${lastTrade.symbol}` : "—"}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Status</div>
+                <div className="mt-0.5 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: lastTrade?.ok ? "var(--success)" : "var(--danger)" }} />
+                  <span>{lastTrade ? (lastTrade.ok ? "Filled" : "Failed") : "Waiting"}</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-[oklch(0.55_0.22_255_/_0.3)] bg-[oklch(0.22_0.10_260_/_0.5)] px-2 py-1.5 text-[10px]">
+              <CheckCircle2 className="h-3.5 w-3.5 text-[oklch(0.85_0.20_230)]" />
+              <span className="font-semibold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">Visible in MT5 · Magic #20260617</span>
+            </div>
+          </section>
+        )}
 
         {!brokerConnected && (
           <Link

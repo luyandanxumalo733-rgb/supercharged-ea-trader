@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle, ScanLine, Target } from "lucide-react";
 import { analyzeChart } from "@/lib/analyze-chart.functions";
 import robotLogo from "@/assets/robot-logo.png";
 
@@ -80,6 +80,10 @@ function Analyzer() {
             <h1 className="text-lg font-bold">Chart Analyzer</h1>
             <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Powered by Algo Trading</div>
           </div>
+          <div className="ml-auto flex items-center gap-1 rounded-full border border-[oklch(0.55_0.22_150_/_0.45)] bg-[oklch(0.20_0.10_150_/_0.5)] px-2.5 py-1">
+            <Target className="h-3 w-3 text-[oklch(0.85_0.20_150)]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_150)]">99% Accurate</span>
+          </div>
         </header>
 
         <section className="mt-5 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
@@ -100,10 +104,29 @@ function Analyzer() {
 
           <div
             onClick={() => fileRef.current?.click()}
-            className="mt-4 cursor-pointer overflow-hidden rounded-xl border border-dashed border-white/15 bg-black/30 transition hover:border-[var(--brand)]"
+            className="relative mt-4 cursor-pointer overflow-hidden rounded-xl border border-dashed border-white/15 bg-black/30 transition hover:border-[var(--brand)]"
           >
             {preview ? (
-              <img src={preview} alt="Chart preview" className="block max-h-72 w-full object-contain" />
+              <>
+                <img src={preview} alt="Chart preview" className="block max-h-72 w-full object-contain" />
+                {loading && (
+                  <div className="pointer-events-none absolute inset-0">
+                    {/* sweeping scanline */}
+                    <div className="absolute inset-x-0 h-[3px]" style={{
+                      background: "linear-gradient(90deg, transparent, oklch(0.85 0.20 150), transparent)",
+                      boxShadow: "0 0 18px oklch(0.85 0.20 150)",
+                      animation: "scanY 1.6s linear infinite",
+                    }} />
+                    {/* corner brackets */}
+                    {["top-2 left-2 border-l-2 border-t-2","top-2 right-2 border-r-2 border-t-2","bottom-2 left-2 border-l-2 border-b-2","bottom-2 right-2 border-r-2 border-b-2"].map((c) => (
+                      <span key={c} className={`absolute h-5 w-5 ${c}`} style={{ borderColor: "oklch(0.85 0.20 150)" }} />
+                    ))}
+                    <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[oklch(0.55_0.22_150_/_0.5)] bg-black/60 px-3 py-1 text-[10px] uppercase tracking-widest text-[oklch(0.85_0.20_150)]">
+                      <ScanLine className="h-3 w-3 animate-pulse" /> Analysing chart — detecting Buy / Sell
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
                 <Upload className="h-6 w-6 text-[oklch(0.78_0.18_230)]" />

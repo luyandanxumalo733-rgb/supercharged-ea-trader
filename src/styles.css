@@ -159,3 +159,8 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+@keyframes scanY {
+  0%   { top: 0%; opacity: 0.2; }
+  50%  { opacity: 1; }
+  100% { top: 100%; opacity: 0.2; }
+}
