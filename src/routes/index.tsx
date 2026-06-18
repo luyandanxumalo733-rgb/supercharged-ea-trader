@@ -331,7 +331,12 @@ function Index() {
   const [themeId, setThemeIdState] = useState("midnight");
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
   const [algoOn, setAlgoOn] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const [bridgeUrl, setBridgeUrl] = useState<string | null>(null);
+  const [heartbeat, setHeartbeat] = useState<{ ok: boolean; latencyMs: number; at: number } | null>(null);
+  const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
   const fire = useServerFn(executeTrade);
+  const heartbeatFn = useServerFn(pingBridge);
 
   useEffect(() => {
     try {
@@ -340,6 +345,9 @@ function Index() {
       if (t) setThemeIdState(t);
       const a = localStorage.getItem("sc_algo");
       if (a === "1") setAlgoOn(true);
+      setValidated(localStorage.getItem("sc_bridge_validated") === "1");
+      const b = localStorage.getItem("sc_broker");
+      if (b) { const j = JSON.parse(b); setBridgeUrl(j.bridgeUrl || null); }
     } catch { /* ignore */ }
   }, [menuOpen]);
 
@@ -351,6 +359,10 @@ function Index() {
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
 
   function toggleAlgo() {
+    if (!algoOn && !validated) {
+      setExec({ status: "Setup required", detail: "Run the Setup Wizard to validate the bridge before enabling 24/7." });
+      return;
+    }
     const next = !algoOn;
     setAlgoOn(next);
     try { localStorage.setItem("sc_algo", next ? "1" : "0"); } catch { /* */ }
@@ -364,6 +376,29 @@ function Index() {
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [algoOn]);
+
+  // Bridge heartbeat: ping /health every 10s while Algo is ON.
+  useEffect(() => {
+    if (!algoOn || !bridgeUrl) return;
+    let cancelled = false;
+    const tick = async () => {
+      const r = await heartbeatFn({ data: { bridgeUrl } }).catch(() => null);
+      if (cancelled || !r) return;
+      setHeartbeat({ ok: r.ok, latencyMs: r.latencyMs, at: Date.now() });
+    };
+    tick();
+    const id = setInterval(tick, 10_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [algoOn, bridgeUrl, heartbeatFn]);
+
+  function recordTrade(t: { symbol: string; side: "BUY" | "SELL"; lot: number; tp: number; sl: number; ok: boolean; status: number; attempts?: number; body?: string }) {
+    try {
+      const raw = localStorage.getItem("sc_trades");
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.unshift({ id: crypto.randomUUID(), ts: new Date().toISOString(), ...t });
+      localStorage.setItem("sc_trades", JSON.stringify(arr.slice(0, 200)));
+    } catch { /* */ }
+  }
 
   async function handleStart() {
     setRunning(true);
@@ -391,20 +426,23 @@ function Index() {
       return;
     }
     setExec({ status: `Sending ${active.length} orders to MT5…` });
-    const results = await Promise.all(active.map(([symbol, c]) =>
-      fire({ data: {
+    const results = await Promise.all(active.map(async ([symbol, c]) => {
+      const lot = Number(c.lot) || 0.01;
+      const tp  = Number(c.tp) || 30;
+      const sl  = Number(c.sl) || 20;
+      const r = await fire({ data: {
         bridgeUrl: broker!.bridgeUrl!,
         login: broker!.login,
         server: broker!.server,
-        symbol,
-        side: "BUY",
-        lot: Number(c.lot) || 0.01,
-        tpPips: Number(c.tp) || 30,
-        slPips: Number(c.sl) || 20,
-      } })
-    ));
+        symbol, side: "BUY", lot, tpPips: tp, slPips: sl,
+      } });
+      recordTrade({ symbol, side: "BUY", lot, tp, sl, ok: r.ok, status: r.status, attempts: r.attempts, body: r.body });
+      return { symbol, ...r };
+    }));
     const ok = results.filter((r) => r.ok).length;
-    setExec({ status: `Sent: ${ok}/${results.length} orders`, detail: ok === results.length ? "All TP/SL attached." : "Some failed — check bridge logs." });
+    const last = results[results.length - 1];
+    setLastTrade({ symbol: last.symbol, side: "BUY", ok: last.ok, at: Date.now() });
+    setExec({ status: `Sent: ${ok}/${results.length} orders`, detail: ok === results.length ? "All TP/SL attached." : "Some failed — bridge auto-retried, see Trade History." });
   }
 
   return (
