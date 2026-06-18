@@ -496,7 +496,7 @@ function Index() {
             </span>
             <div>
               <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Algo Trading</div>
-              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : "Disabled"}</div>
+              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : validated ? "Disabled" : "Setup required"}</div>
             </div>
           </div>
           <button
@@ -510,6 +510,55 @@ function Index() {
             />
           </button>
         </section>
+
+        {!validated && (
+          <Link
+            to="/setup"
+            className="mt-3 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.22_230_/_0.5)] p-3 transition hover:brightness-110"
+            style={{ background: "linear-gradient(135deg, oklch(0.30 0.18 230 / 0.45), oklch(0.22 0.08 260))" }}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.62 0.22 230)" }}>
+              <Rocket className="h-5 w-5 text-white" />
+            </span>
+            <div className="flex-1">
+              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.18_230)]">Required</div>
+              <div className="text-sm font-semibold">Run Setup Wizard to validate bridge</div>
+            </div>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Start →</span>
+          </Link>
+        )}
+
+        {algoOn && (
+          <section className="mt-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3">
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Live Execution</div>
+              <div className="flex items-center gap-1.5 text-[10px]">
+                {heartbeat?.ok
+                  ? <><Wifi className="h-3.5 w-3.5 text-[var(--success)]" /><span>Bridge OK · {heartbeat.latencyMs}ms</span></>
+                  : <><WifiOff className="h-3.5 w-3.5 text-[var(--danger)]" /><span>{heartbeat ? "Bridge offline" : "Pinging…"}</span></>}
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Last action</div>
+                <div className="mt-0.5 font-mono">
+                  {lastTrade ? `${lastTrade.side} ${lastTrade.symbol}` : "—"}
+                </div>
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Status</div>
+                <div className="mt-0.5 flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: lastTrade?.ok ? "var(--success)" : "var(--danger)" }} />
+                  <span>{lastTrade ? (lastTrade.ok ? "Filled" : "Failed") : "Waiting"}</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-[oklch(0.55_0.22_255_/_0.3)] bg-[oklch(0.22_0.10_260_/_0.5)] px-2 py-1.5 text-[10px]">
+              <CheckCircle2 className="h-3.5 w-3.5 text-[oklch(0.85_0.20_230)]" />
+              <span className="font-semibold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">Visible in MT5 · Magic #20260617</span>
+            </div>
+          </section>
+        )}
 
         {!brokerConnected && (
           <Link
