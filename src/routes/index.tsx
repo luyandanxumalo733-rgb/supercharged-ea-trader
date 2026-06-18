@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server, Wifi, WifiOff, Rocket, CheckCircle2 } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
+import { pingBridge } from "@/lib/bridge.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -151,17 +152,18 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge" | "/setup" | "/history";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
   { icon: Server,          label: "MT5 Bridge",        color: "oklch(0.70 0.20 200)", to: "/bridge" },
+  { icon: Rocket,          label: "Setup Wizard",      color: "oklch(0.72 0.22 230)", to: "/setup" },
+  { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)", to: "/history" },
   { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
   { icon: Wallet,          label: "Portfolio",         color: "oklch(0.68 0.22 340)" },
-  { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)" },
   { icon: Bell,            label: "Alerts",            color: "oklch(0.70 0.15 290)" },
   { icon: Shield,          label: "Risk Manager",      color: "oklch(0.72 0.18 180)" },
   { icon: Settings,        label: "Settings",          color: "oklch(0.74 0.16 110)" },
