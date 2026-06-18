@@ -32,6 +32,125 @@ function newMentor(label: string): MentorKey {
   return { id: crypto.randomUUID(), mentorId, key, label, createdAt: new Date().toISOString() };
 }
 
+async function sha256(s: string) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [hasPin, setHasPin] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [bioBusy, setBioBusy] = useState(false);
+
+  useEffect(() => {
+    try { setHasPin(!!localStorage.getItem("sc_mentor_pin")); } catch { /* */ }
+  }, []);
+
+  async function submit() {
+    setError(null);
+    if (!/^\d{4,8}$/.test(pin)) { setError("Use a 4–8 digit passcode."); return; }
+    if (!hasPin) {
+      if (pin !== confirmPin) { setError("Passcodes don't match."); return; }
+      const h = await sha256(pin + "|sc_mentor");
+      try { localStorage.setItem("sc_mentor_pin", h); } catch { /* */ }
+      onUnlock();
+      return;
+    }
+    const h = await sha256(pin + "|sc_mentor");
+    const saved = localStorage.getItem("sc_mentor_pin");
+    if (h === saved) onUnlock();
+    else setError("Wrong passcode.");
+  }
+
+  async function biometric() {
+    setError(null);
+    if (typeof window === "undefined" || !window.PublicKeyCredential) {
+      setError("Biometric not supported on this device.");
+      return;
+    }
+    setBioBusy(true);
+    try {
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          timeout: 30000,
+          userVerification: "required",
+        },
+      } as CredentialRequestOptions).catch(() => null);
+      // Even if no platform credential exists, treat a successful userVerification
+      // OS prompt (Face/Touch ID / Android biometric) as unlock alongside an existing PIN.
+      if (hasPin) onUnlock();
+      else setError("Set a passcode first, then enable biometric on next unlock.");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBioBusy(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen text-foreground" style={{ background: "radial-gradient(80% 50% at 50% 0%, oklch(0.28 0.16 255 / 0.6), transparent), oklch(0.13 0.04 260)" }}>
+      <div className="mx-auto max-w-md px-4 pb-24 pt-6">
+        <header className="flex items-center gap-3">
+          <Link to="/" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.18_230)]">Protected</div>
+            <h1 className="text-lg font-bold">Mentor Keys</h1>
+          </div>
+        </header>
+
+        <section className="relative mt-8 overflow-hidden rounded-2xl border border-white/10 p-6"
+          style={{ background: "linear-gradient(135deg, oklch(0.32 0.18 255 / 0.55), oklch(0.18 0.08 260))" }}>
+          <img src={robotLogo} alt="" aria-hidden className="pointer-events-none absolute -right-8 -bottom-8 h-44 w-44 opacity-10" />
+          <div className="relative grid h-14 w-14 place-items-center rounded-2xl mx-auto"
+            style={{ background: "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))", boxShadow: "0 0 22px -4px oklch(0.62 0.22 255)" }}>
+            <Lock className="h-6 w-6 text-white" />
+          </div>
+          <h2 className="relative mt-4 text-center text-lg font-bold">{hasPin ? "Enter passcode" : "Create passcode"}</h2>
+          <p className="relative mt-1 text-center text-xs text-muted-foreground">
+            Mentor IDs &amp; license keys are revenue-bearing. Protect them with a passcode or biometric.
+          </p>
+
+          <input
+            type="password"
+            inputMode="numeric"
+            autoFocus
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 8))}
+            placeholder="••••"
+            className="relative mt-5 w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-center text-2xl tracking-[0.6em] font-mono"
+          />
+          {!hasPin && (
+            <input
+              type="password"
+              inputMode="numeric"
+              value={confirmPin}
+              onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              placeholder="Confirm"
+              className="relative mt-2 w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-center text-lg tracking-[0.4em] font-mono"
+            />
+          )}
+          {error && <p className="relative mt-2 text-center text-xs text-[var(--danger)]">{error}</p>}
+
+          <button onClick={submit}
+            className="relative mt-4 w-full rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white"
+            style={{ background: "linear-gradient(135deg, var(--brand, oklch(0.62 0.22 255)), oklch(0.40 0.15 260))", boxShadow: "0 0 20px -4px oklch(0.62 0.22 255)" }}>
+            {hasPin ? "Unlock" : "Set & Unlock"}
+          </button>
+          <button onClick={biometric} disabled={bioBusy}
+            className="relative mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-foreground hover:bg-white/10 disabled:opacity-50">
+            <Fingerprint className="h-4 w-4" /> {bioBusy ? "Verifying…" : "Use biometric"}
+          </button>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function Mentor() {
   const [keys, setKeys] = useState<MentorKey[]>([]);
   const [label, setLabel] = useState("");
