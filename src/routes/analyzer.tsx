@@ -80,9 +80,12 @@ function Analyzer() {
             <h1 className="text-lg font-bold">Chart Analyzer</h1>
             <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Powered by Algo Trading</div>
           </div>
-          <div className="ml-auto flex items-center gap-1 rounded-full border border-[oklch(0.55_0.22_150_/_0.45)] bg-[oklch(0.20_0.10_150_/_0.5)] px-2.5 py-1">
-            <Target className="h-3 w-3 text-[oklch(0.85_0.20_150)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_150)]">99% Accurate</span>
+          <div className="ml-auto flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1 rounded-full border border-[oklch(0.55_0.22_150_/_0.45)] bg-[oklch(0.20_0.10_150_/_0.5)] px-2.5 py-1">
+              <Target className="h-3 w-3 text-[oklch(0.85_0.20_150)]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_150)]">80–99% Confidence</span>
+            </div>
+            <span className="rounded-full border border-[oklch(0.55_0.22_255_/_0.45)] bg-[oklch(0.22_0.10_260_/_0.5)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">SMC Engine</span>
           </div>
         </header>
 

@@ -42,12 +42,6 @@ function Broker() {
     } catch { /* ignore */ }
   }, []);
 
-  const suggestedBridge = `https://bridge.supercharged-ea.app/mt5/${accountType.toLowerCase()}/${login || "ACCOUNT"}`;
-
-  async function copySuggested() {
-    try { await navigator.clipboard.writeText(suggestedBridge); setCopied(true); setTimeout(() => setCopied(false), 1200); } catch { /* */ }
-  }
-
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -61,7 +55,7 @@ function Broker() {
     }
     const payload: Saved = {
       broker, server, login: login.trim(), name: name.trim(),
-      bridgeUrl: bridgeUrl.trim(),
+      bridgeUrl: "metaapi-cloud",
       connectedAt: new Date().toISOString(),
     };
     localStorage.setItem("sc_broker", JSON.stringify(payload));
@@ -192,34 +186,13 @@ function Broker() {
             </div>
           </label>
 
-          <label className="block">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">MT5/MT4 Bridge URL — 24/7 execution</span>
-            <input
-              value={bridgeUrl}
-              onChange={(e) => setBridgeUrl(e.target.value)}
-              placeholder="https://your-bridge.example.com"
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm"
-            />
-            <div className="mt-2 rounded-lg border border-white/10 bg-black/30 p-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Suggested Bridge URL</div>
-                  <div className="truncate font-mono text-[11px] text-[oklch(0.85_0.18_230)]">{suggestedBridge}</div>
-                </div>
-                <div className="flex gap-1">
-                  <button type="button" onClick={copySuggested} className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10">
-                    {copied ? <Check className="h-3.5 w-3.5 text-[var(--success)]" /> : <Copy className="h-3.5 w-3.5" />}
-                  </button>
-                  <button type="button" onClick={() => setBridgeUrl(suggestedBridge)} className="rounded-md border border-white/10 bg-white/5 px-2 text-[10px] font-semibold uppercase tracking-widest hover:bg-white/10">
-                    Use
-                  </button>
-                </div>
-              </div>
-            </div>
-            <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
-              The Bridge URL connects this mobile EA to your MT5 terminal. With Algo Trading ON, orders fire every 60s and TP/SL are attached automatically. Run the bridge on a VPS for true 24/7 execution.
+          <div className="rounded-lg border border-[oklch(0.55_0.22_255_/_0.35)] bg-[oklch(0.22_0.10_260_/_0.4)] p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">Cloud Bridge — MetaApi.cloud</div>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              You don't need a PC, VPS, or Ngrok. Signals are sent through MetaApi.cloud which hosts MT5 for you.
+              Add your <b className="text-foreground">METAAPI_TOKEN</b> and <b className="text-foreground">METAAPI_ACCOUNT_ID</b> on the <Link to="/bridge" className="underline">MT5 Bridge</Link> page.
             </p>
-          </label>
+          </div>
 
           {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
@@ -243,10 +216,10 @@ function Broker() {
             <span className="text-[10px] font-semibold uppercase tracking-widest">Algo Trading — How it links to MT5</span>
           </div>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-relaxed text-muted-foreground">
-            <li>In MetaTrader 5: <span className="text-foreground">Tools → Options → Expert Advisors → Allow WebRequest</span> for your bridge URL.</li>
-            <li>Run the MT5 bridge on a VPS (or local PC kept online) so the EA can fire 24/7.</li>
-            <li>Paste the bridge URL above, link your Headway {accountType.toLowerCase()} account, then toggle <span className="text-foreground">Algo Trading</span> on the dashboard.</li>
-            <li>The EA sends orders every minute with TP/SL attached and closes positions automatically per your symbol settings.</li>
+            <li>Create a MetaApi.cloud account and link your Headway {accountType.toLowerCase()} MT5 credentials there.</li>
+            <li>Copy your <span className="text-foreground">Account ID</span> + <span className="text-foreground">API Token</span> into project secrets.</li>
+            <li>Run the Setup Wizard to validate, then toggle <span className="text-foreground">Algo Trading</span> on the dashboard.</li>
+            <li>The EA sends orders every minute via MetaApi REST with TP/SL attached — 24/7, no PC required.</li>
           </ol>
         </section>
       </div>
