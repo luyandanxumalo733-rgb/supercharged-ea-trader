@@ -2,10 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 
 type Side = "BUY" | "SELL";
 export type TradeRequest = {
-  bridgeUrl: string;
-  login: string;
-  password?: string;
-  server: string;
   symbol: string;
   side: Side;
   lot: number;
@@ -14,38 +10,45 @@ export type TradeRequest = {
 };
 
 /**
- * Forwards a trade order to the user's self-hosted MT5/MT4 bridge.
- * The bridge must expose POST {bridgeUrl}/order accepting JSON and talking to MetaTrader.
- * (MT5/MT4 has no public web API — a local bridge is required.)
+ * Sends a market order to the user's MT5 account via the MetaApi.cloud REST API.
+ * No local Python bridge / Ngrok is required — MetaApi hosts the MT5 terminal in the cloud
+ * and exposes a hosted REST endpoint we hit directly with the account's auth token.
+ *
+ * Required server env: METAAPI_TOKEN, METAAPI_ACCOUNT_ID. Optional: METAAPI_REGION (default new-york).
  */
 export const executeTrade = createServerFn({ method: "POST" })
   .inputValidator((data: TradeRequest) => {
-    if (!data?.bridgeUrl?.startsWith("http")) throw new Error("Invalid bridge URL");
     if (!data.symbol || !data.side) throw new Error("symbol/side required");
     if (!(data.lot > 0)) throw new Error("lot must be > 0");
     return data;
   })
   .handler(async ({ data }) => {
-    const url = data.bridgeUrl.replace(/\/$/, "") + "/order";
+    const token = process.env.METAAPI_TOKEN;
+    const accountId = process.env.METAAPI_ACCOUNT_ID;
+    const region = process.env.METAAPI_REGION || "new-york";
+    if (!token || !accountId) {
+      return { ok: false, status: 0, body: "MetaApi not configured: add METAAPI_TOKEN and METAAPI_ACCOUNT_ID secrets.", attempts: 0 };
+    }
+    const url = `https://mt-client-api-v1.${region}.agiliumtrade.ai/users/current/accounts/${accountId}/trade`;
     const payload = JSON.stringify({
-      login: data.login,
-      password: data.password,
-      server: data.server,
+      actionType: data.side === "BUY" ? "ORDER_TYPE_BUY" : "ORDER_TYPE_SELL",
       symbol: data.symbol,
-      side: data.side,
       volume: data.lot,
-      tp_pips: data.tpPips,
-      sl_pips: data.slPips,
+      stopLoss: data.slPips,
+      stopLossUnits: "RELATIVE_PIPS",
+      takeProfit: data.tpPips,
+      takeProfitUnits: "RELATIVE_PIPS",
       magic: 20260617,
+      comment: "SuperChargedEA",
     });
     // Resilient bridge call: 3 attempts with exponential backoff so transient
-    // VPS/network blips don't kill 24/7 execution.
+    // network blips don't kill 24/7 execution.
     let lastErr = "unknown";
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "auth-token": token },
           body: payload,
           signal: AbortSignal.timeout(12000),
         });
