@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, CheckCircle2, Loader2, XCircle, Server, ShieldCheck, Plug, Rocket } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
 import { pingBridge, loginBridge } from "@/lib/bridge.functions";
 
@@ -24,52 +24,31 @@ function Setup() {
   const nav = useNavigate();
 
   const [step, setStep] = useState<Step>(0);
-  const [bridgeUrl, setBridgeUrl] = useState("");
-  const [broker, setBroker] = useState<{ login: string; password: string; server: string; bridgeUrl?: string } | null>(null);
   const [reqProbe, setReq] = useState<Probe>({ state: "idle" });
   const [healthProbe, setHealth] = useState<Probe>({ state: "idle" });
   const [loginProbe, setLogin] = useState<Probe>({ state: "idle" });
 
-  useEffect(() => {
-    try {
-      const b = localStorage.getItem("sc_broker");
-      if (b) {
-        const j = JSON.parse(b);
-        setBroker(j);
-        if (j.bridgeUrl) setBridgeUrl(j.bridgeUrl);
-      }
-    } catch { /* */ }
-  }, []);
-
   async function runReq() {
     setReq({ state: "running" });
-    await new Promise((r) => setTimeout(r, 600));
-    const ok = bridgeUrl.startsWith("http") && /:\d+/.test(bridgeUrl);
-    setReq(ok ? { state: "ok", detail: "URL looks valid (http(s)://host:port)" } : { state: "fail", detail: "Use http(s)://host:port (default port 8765)" });
-    if (ok) {
-      try {
-        const cur = broker ?? { login: "", password: "", server: "" };
-        const next = { ...cur, bridgeUrl };
-        localStorage.setItem("sc_broker", JSON.stringify(next));
-        setBroker(next);
-      } catch { /* */ }
-      setStep(1);
+    // Probe just verifies MetaApi credentials are configured server-side.
+    const r = await ping({ data: {} });
+    if (r.status === 0 && /Missing METAAPI/.test(r.body || "")) {
+      setReq({ state: "fail", detail: "Add METAAPI_TOKEN and METAAPI_ACCOUNT_ID secrets (see MT5 Bridge page)." });
+      return;
     }
+    setReq({ state: "ok", detail: "MetaApi credentials detected." });
+    setStep(1);
   }
   async function runHealth() {
     setHealth({ state: "running" });
-    const r = await ping({ data: { bridgeUrl } });
-    setHealth(r.ok ? { state: "ok", detail: `Reachable in ${r.latencyMs}ms` } : { state: "fail", detail: `Cannot reach /health — ${r.body}` });
+    const r = await ping({ data: {} });
+    setHealth(r.ok ? { state: "ok", detail: `MetaApi reachable in ${r.latencyMs}ms` } : { state: "fail", detail: `MetaApi unreachable — ${r.body}` });
     if (r.ok) setStep(2);
   }
   async function runLogin() {
-    if (!broker?.login || !broker.password || !broker.server) {
-      setLogin({ state: "fail", detail: "Missing broker login/password/server. Set them in Broker Connection." });
-      return;
-    }
     setLogin({ state: "running" });
-    const r = await login({ data: { bridgeUrl, login: broker.login, password: broker.password, server: broker.server } });
-    setLogin(r.ok ? { state: "ok", detail: "Bridge logged into MT5 successfully" } : { state: "fail", detail: `Login failed — ${r.body}` });
+    const r = await login({ data: {} });
+    setLogin(r.ok ? { state: "ok", detail: "MetaApi → MT5 account verified." } : { state: "fail", detail: `Verification failed — ${r.body}` });
     if (r.ok) setStep(3);
   }
   function finish() {
@@ -80,10 +59,10 @@ function Setup() {
     nav({ to: "/" });
   }
 
-  const steps: Array<{ label: string; icon: typeof Server; probe: Probe; run: () => void; enabled: boolean }> = [
-    { label: "Bridge URL & requirements", icon: Server, probe: reqProbe, run: runReq, enabled: step >= 0 },
-    { label: "Health check (Python bridge)", icon: Plug, probe: healthProbe, run: runHealth, enabled: step >= 1 },
-    { label: "MT5 login validation", icon: ShieldCheck, probe: loginProbe, run: runLogin, enabled: step >= 2 },
+  const steps: Array<{ label: string; icon: typeof Cloud; probe: Probe; run: () => void; enabled: boolean }> = [
+    { label: "MetaApi credentials configured", icon: Cloud, probe: reqProbe, run: runReq, enabled: step >= 0 },
+    { label: "MetaApi cloud reachable", icon: Plug, probe: healthProbe, run: runHealth, enabled: step >= 1 },
+    { label: "MT5 account verified", icon: ShieldCheck, probe: loginProbe, run: runLogin, enabled: step >= 2 },
   ];
 
   return (
@@ -107,15 +86,11 @@ function Setup() {
           </header>
 
           <section className="mt-5 rounded-2xl border border-white/10 bg-[oklch(0.18_0.06_260_/_0.7)] p-4">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Bridge URL</div>
-            <input
-              value={bridgeUrl}
-              onChange={(e) => setBridgeUrl(e.target.value)}
-              placeholder="http://YOUR-VPS-IP:8765"
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm font-mono"
-            />
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Don't have it yet? Open <Link to="/bridge" className="underline">MT5 Bridge</Link> to download the Python script.
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">MetaApi.cloud Bridge</div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              No PC, no Python, no Ngrok. We route signals directly to your MT5 account through MetaApi's hosted REST API.
+              Add your <b className="text-foreground">METAAPI_TOKEN</b> and <b className="text-foreground">METAAPI_ACCOUNT_ID</b> on the
+              <Link to="/bridge" className="ml-1 underline">MT5 Bridge</Link> page, then run the checks below.
             </p>
           </section>
 
@@ -146,7 +121,7 @@ function Setup() {
                   )}
                   <button
                     onClick={s.run}
-                    disabled={!s.enabled || s.probe.state === "running" || !bridgeUrl}
+                    disabled={!s.enabled || s.probe.state === "running"}
                     className="mt-3 w-full rounded-xl py-2.5 text-xs font-semibold uppercase tracking-widest text-white disabled:opacity-40"
                     style={{ background: "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))" }}
                   >
