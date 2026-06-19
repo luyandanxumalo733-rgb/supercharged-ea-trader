@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import robotLogo from "@/assets/robot-logo.png";
 import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server, Wifi, WifiOff, Rocket, CheckCircle2 } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
@@ -379,17 +380,47 @@ function Index() {
 
   // Bridge heartbeat: ping /health every 10s while Algo is ON.
   useEffect(() => {
-    if (!algoOn || !bridgeUrl) return;
+    if (!algoOn) return;
     let cancelled = false;
+    let failStreak = 0;
+    const LATENCY_SPIKE_MS = 1500;
+    async function notifyWebhook(kind: string, detail: string) {
+      try {
+        const url = localStorage.getItem("sc_alert_webhook");
+        if (!url || !url.startsWith("http")) return;
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ source: "SuperChargedEA", kind, detail, at: new Date().toISOString() }),
+        }).catch(() => null);
+      } catch { /* */ }
+    }
     const tick = async () => {
-      const r = await heartbeatFn({ data: { bridgeUrl } }).catch(() => null);
+      const r = await heartbeatFn({ data: {} }).catch(() => null);
       if (cancelled || !r) return;
       setHeartbeat({ ok: r.ok, latencyMs: r.latencyMs, at: Date.now() });
+      if (!r.ok) {
+        failStreak += 1;
+        if (failStreak === 2 || failStreak % 5 === 0) {
+          toast.error("MetaApi bridge offline", { description: `Heartbeat failing (${failStreak}x). Auto-retrying…` });
+          void notifyWebhook("bridge_down", `failStreak=${failStreak}`);
+        }
+      } else {
+        if (failStreak >= 2) {
+          toast.success("Bridge recovered", { description: `Latency ${r.latencyMs}ms` });
+          void notifyWebhook("bridge_recovered", `latency=${r.latencyMs}ms`);
+        }
+        failStreak = 0;
+        if (r.latencyMs > LATENCY_SPIKE_MS) {
+          toast.warning("Latency spike", { description: `MetaApi heartbeat ${r.latencyMs}ms` });
+          void notifyWebhook("latency_spike", `latency=${r.latencyMs}ms`);
+        }
+      }
     };
     tick();
     const id = setInterval(tick, 10_000);
     return () => { cancelled = true; clearInterval(id); };
-  }, [algoOn, bridgeUrl, heartbeatFn]);
+  }, [algoOn, heartbeatFn]);
 
   function recordTrade(t: { symbol: string; side: "BUY" | "SELL"; lot: number; tp: number; sl: number; ok: boolean; status: number; attempts?: number; body?: string }) {
     try {
@@ -416,32 +447,30 @@ function Index() {
       setExec({ status: "No broker linked", detail: "Open Broker Connection to link MT5." });
       return;
     }
-    if (!broker.bridgeUrl) {
-      setExec({ status: "No MT5 bridge URL", detail: "Set your MT5/MT4 bridge URL in Broker Connection." });
-      return;
-    }
     const active = Object.entries(symbols).filter(([, c]) => c.enabled);
     if (!active.length) {
       setExec({ status: "No symbols enabled", detail: "Open Symbols to enable pairs." });
       return;
     }
-    setExec({ status: `Sending ${active.length} orders to MT5…` });
+    setExec({ status: `Sending ${active.length} orders via MetaApi…` });
+    let failCount = 0;
     const results = await Promise.all(active.map(async ([symbol, c]) => {
       const lot = Number(c.lot) || 0.01;
       const tp  = Number(c.tp) || 30;
       const sl  = Number(c.sl) || 20;
-      const r = await fire({ data: {
-        bridgeUrl: broker!.bridgeUrl!,
-        login: broker!.login,
-        server: broker!.server,
-        symbol, side: "BUY", lot, tpPips: tp, slPips: sl,
-      } });
+      const r = await fire({ data: { symbol, side: "BUY", lot, tpPips: tp, slPips: sl } });
+      if (!r.ok) failCount += 1;
       recordTrade({ symbol, side: "BUY", lot, tp, sl, ok: r.ok, status: r.status, attempts: r.attempts, body: r.body });
       return { symbol, ...r };
     }));
     const ok = results.filter((r) => r.ok).length;
     const last = results[results.length - 1];
     setLastTrade({ symbol: last.symbol, side: "BUY", ok: last.ok, at: Date.now() });
+    if (failCount > 0) {
+      toast.error(`${failCount} of ${results.length} orders failed`, { description: "Check Trade History and MetaApi credentials." });
+    } else if (ok > 0) {
+      toast.success(`Sent ${ok} order${ok > 1 ? "s" : ""} via MetaApi`);
+    }
     setExec({ status: `Sent: ${ok}/${results.length} orders`, detail: ok === results.length ? "All TP/SL attached." : "Some failed — bridge auto-retried, see Trade History." });
   }
 
