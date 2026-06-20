@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { scrubSecrets } from "./scrub.server";
 
 /**
  * MetaApi.cloud-backed bridge probes. No local Python / Ngrok involved —
@@ -25,9 +26,9 @@ export const pingBridge = createServerFn({ method: "POST" })
         signal: AbortSignal.timeout(8000),
       });
       const body = await res.text();
-      return { ok: res.ok, status: res.status, latencyMs: Date.now() - t0, body: body.slice(0, 200) };
+      return { ok: res.ok, status: res.status, latencyMs: Date.now() - t0, body: scrubSecrets(body).slice(0, 200) };
     } catch (e) {
-      return { ok: false, status: 0, latencyMs: Date.now() - t0, body: (e as Error).message };
+      return { ok: false, status: 0, latencyMs: Date.now() - t0, body: scrubSecrets((e as Error).message) };
     }
   });
 
@@ -47,8 +48,8 @@ export const loginBridge = createServerFn({ method: "POST" })
         signal: AbortSignal.timeout(10000),
       });
       const body = await res.text();
-      return { ok: res.ok, status: res.status, body: body.slice(0, 400) };
+      return { ok: res.ok, status: res.status, body: scrubSecrets(body).slice(0, 400) };
     } catch (e) {
-      return { ok: false, status: 0, body: (e as Error).message };
+      return { ok: false, status: 0, body: scrubSecrets((e as Error).message) };
     }
   });

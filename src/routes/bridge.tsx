@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Cloud, KeyRound, ShieldCheck, Copy, Check, ExternalLink } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ArrowLeft, Cloud, KeyRound, ShieldCheck, Copy, Check, ExternalLink, Eye, EyeOff, RefreshCw, Lock } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
+import { getCredentialStatus } from "@/lib/credentials.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/bridge")({
   head: () => ({
@@ -29,14 +32,48 @@ function CopyBtn({ text }: { text: string }) {
 
 function BridgePage() {
   const [webhook, setWebhook] = useState("");
+  const fetchStatus = useServerFn(getCredentialStatus);
+  const [status, setStatus] = useState<Awaited<ReturnType<typeof getCredentialStatus>> | null>(null);
+  const [reveal, setReveal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const s = await fetchStatus({ data: {} });
+      setStatus(s);
+    } catch {
+      toast.error("Could not load credential status");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     try {
       const w = localStorage.getItem("sc_alert_webhook");
       if (w) setWebhook(w);
     } catch { /* */ }
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function maskedDisplay(last4: string, length: number) {
+    if (!length) return "— not set —";
+    if (reveal) return `•••• •••• •••• ${last4}  (${length} chars)`;
+    return `•••• •••• •••• ••••`;
+  }
+
+  function rotate() {
+    toast.message("Rotate credentials", {
+      description: "Open Project Settings → Secrets and update METAAPI_TOKEN / METAAPI_ACCOUNT_ID. Then tap Refresh to confirm the fingerprint changed.",
+      duration: 8000,
+    });
+  }
+
   function saveWebhook() {
     try { localStorage.setItem("sc_alert_webhook", webhook.trim()); } catch { /* */ }
+    toast.success("Webhook saved");
   }
 
   return (
@@ -100,6 +137,79 @@ function BridgePage() {
                 <code className="text-emerald-200">METAAPI_REGION</code><span className="text-[10px] text-muted-foreground">optional · default new-york</span>
               </li>
             </ul>
+          </section>
+
+          <section className="mt-4 rounded-2xl border border-white/10 bg-[oklch(0.18_0.06_260_/_0.7)] p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[oklch(0.78_0.18_230)]">
+                <Lock className="h-4 w-4" />
+                <span className="text-xs uppercase tracking-widest">Credential Vault</span>
+              </div>
+              <button
+                onClick={() => setReveal((r) => !r)}
+                className="inline-flex items-center gap-1 rounded-md border border-white/15 bg-white/5 px-2 py-1 text-[10px] uppercase tracking-widest hover:bg-white/10"
+              >
+                {reveal ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {reveal ? "Hide" : "Reveal mask"}
+              </button>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Secrets are encrypted at rest in Lovable Cloud and injected into server functions at request time.
+              They never reach the browser, never appear in client bundles, and outbound bridge responses are scrubbed before leaving the server.
+            </p>
+
+            <div className="mt-3 space-y-2 text-[11px]">
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="flex items-center justify-between">
+                  <code className="text-emerald-200">METAAPI_TOKEN</code>
+                  <span className={`text-[10px] uppercase tracking-widest ${status?.token.present ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+                    {status?.token.present ? "set" : "missing"}
+                  </span>
+                </div>
+                <div className="mt-1 font-mono text-[12px] tracking-widest">{status ? maskedDisplay(status.token.last4, status.token.length) : "…"}</div>
+                {status?.token.fingerprint && (
+                  <div className="mt-1 text-[10px] text-muted-foreground">fingerprint <span className="font-mono">{status.token.fingerprint}</span></div>
+                )}
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="flex items-center justify-between">
+                  <code className="text-emerald-200">METAAPI_ACCOUNT_ID</code>
+                  <span className={`text-[10px] uppercase tracking-widest ${status?.accountId.present ? "text-[var(--success)]" : "text-[var(--danger)]"}`}>
+                    {status?.accountId.present ? "set" : "missing"}
+                  </span>
+                </div>
+                <div className="mt-1 font-mono text-[12px] tracking-widest">{status ? maskedDisplay(status.accountId.last4, status.accountId.length) : "…"}</div>
+                {status?.accountId.fingerprint && (
+                  <div className="mt-1 text-[10px] text-muted-foreground">fingerprint <span className="font-mono">{status.accountId.fingerprint}</span></div>
+                )}
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/40 p-2.5">
+                <div className="flex items-center justify-between">
+                  <code className="text-emerald-200">METAAPI_REGION</code>
+                  <span className="font-mono text-[11px]">{status?.region ?? "—"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                onClick={refresh}
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-widest hover:bg-white/10 disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+              </button>
+              <button
+                onClick={rotate}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-white"
+                style={{ background: "linear-gradient(135deg, oklch(0.62 0.22 30), oklch(0.45 0.18 25))", boxShadow: "0 0 18px -4px oklch(0.62 0.22 30)" }}
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Rotate credentials
+              </button>
+            </div>
+            <p className="mt-2 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+              Rotation flow: revoke old token at MetaApi → update secrets in Project Settings → tap Refresh. Fingerprint above will change.
+            </p>
           </section>
 
           <section className="mt-4 rounded-2xl border border-white/10 bg-[oklch(0.18_0.06_260_/_0.7)] p-4">
