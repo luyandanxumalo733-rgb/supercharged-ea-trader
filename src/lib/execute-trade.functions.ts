@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { scrubSecrets } from "./scrub.server";
 
 type Side = "BUY" | "SELL";
 export type TradeRequest = {
@@ -53,10 +54,11 @@ export const executeTrade = createServerFn({ method: "POST" })
           signal: AbortSignal.timeout(12000),
         });
         const body = await res.text();
-        if (res.ok) return { ok: true, status: res.status, body, attempts: attempt };
-        lastErr = `HTTP ${res.status}: ${body.slice(0, 200)}`;
+        const safe = scrubSecrets(body);
+        if (res.ok) return { ok: true, status: res.status, body: safe, attempts: attempt };
+        lastErr = `HTTP ${res.status}: ${safe.slice(0, 200)}`;
       } catch (e) {
-        lastErr = (e as Error).message;
+        lastErr = scrubSecrets((e as Error).message);
       }
       if (attempt < 3) await new Promise((r) => setTimeout(r, 400 * attempt));
     }
