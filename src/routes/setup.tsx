@@ -4,6 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
 import { pingBridge, loginBridge } from "@/lib/bridge.functions";
+import { diagnoseMetaApi } from "@/lib/diagnose.functions";
+// keep referenced so the server-fn plugin registers it
+void diagnoseMetaApi;
 
 export const Route = createFileRoute("/setup")({
   head: () => ({
