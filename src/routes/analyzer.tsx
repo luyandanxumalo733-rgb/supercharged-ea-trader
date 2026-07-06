@@ -15,8 +15,17 @@ export const Route = createFileRoute("/analyzer")({
   component: Analyzer,
 });
 
-const PAIRS = ["EURUSD","GBPUSD","USDJPY","USDCHF","AUDUSD","USDCAD","NZDUSD","XAUUSD","BTCUSD","ETHUSD"];
-const TFS = ["M5","M15","M30","H1","H4","D1"];
+const PAIR_GROUPS: Array<{ label: string; items: string[] }> = [
+  { label: "Forex Majors", items: ["EURUSD","GBPUSD","USDJPY","USDCHF","AUDUSD","USDCAD","NZDUSD"] },
+  { label: "Forex Minors / Crosses", items: ["EURJPY","EURGBP","EURAUD","EURCHF","EURCAD","EURNZD","GBPJPY","GBPAUD","GBPCAD","GBPCHF","GBPNZD","AUDJPY","AUDNZD","AUDCAD","AUDCHF","NZDJPY","CADJPY","CHFJPY","CADCHF"] },
+  { label: "Forex Exotics", items: ["USDTRY","USDZAR","USDMXN","USDSGD","USDHKD","USDNOK","USDSEK","USDDKK","USDPLN","USDCZK","USDHUF","USDCNH","USDINR","USDTHB"] },
+  { label: "Metals & Commodities", items: ["XAUUSD","XAGUSD","XPTUSD","XPDUSD","WTI","BRENT","USOIL","UKOIL","NATGAS","COPPER"] },
+  { label: "Indexes", items: ["US30","US100","US500","US2000","GER40","UK100","FRA40","EU50","JP225","AUS200","HK50","CHINA50","SPA35","NETH25","SUI20","SA40"] },
+  { label: "Crypto", items: ["BTCUSD","ETHUSD","XRPUSD","LTCUSD","BCHUSD","ADAUSD","SOLUSD","DOGEUSD","DOTUSD","LINKUSD","MATICUSD","AVAXUSD","BNBUSD","TRXUSD"] },
+  { label: "US Stocks", items: ["AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","NFLX","AMD","INTC","BABA","JPM","V","MA","DIS","BA","KO","PEP","XOM","CVX","PFE","WMT","NKE"] },
+  { label: "ETFs", items: ["SPY","QQQ","DIA","IWM","GLD","SLV","USO","TLT","EEM","XLF","XLE","XLK"] },
+];
+const TFS = ["M1","M5","M15","M30","H1","H4","D1","W1","MN"];
 
 type Result = Awaited<ReturnType<typeof analyzeChart>>;
 
@@ -83,7 +92,7 @@ function Analyzer() {
           <div className="ml-auto flex flex-col items-end gap-1">
             <div className="flex items-center gap-1 rounded-full border border-[oklch(0.55_0.22_150_/_0.45)] bg-[oklch(0.20_0.10_150_/_0.5)] px-2.5 py-1">
               <Target className="h-3 w-3 text-[oklch(0.85_0.20_150)]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_150)]">80–99% Confidence</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_150)]">88–99% Confidence</span>
             </div>
             <span className="rounded-full border border-[oklch(0.55_0.22_255_/_0.45)] bg-[oklch(0.22_0.10_260_/_0.5)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">SMC Engine</span>
           </div>
@@ -94,7 +103,11 @@ function Analyzer() {
             <label className="block">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Pair</span>
               <select value={pair} onChange={(e) => setPair(e.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm">
-                {PAIRS.map((p) => <option key={p} value={p}>{p}</option>)}
+                {PAIR_GROUPS.map((g) => (
+                  <optgroup key={g.label} label={g.label}>
+                    {g.items.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </label>
             <label className="block">
@@ -125,7 +138,7 @@ function Analyzer() {
                       <span key={c} className={`absolute h-5 w-5 ${c}`} style={{ borderColor: "oklch(0.85 0.20 150)" }} />
                     ))}
                     <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[oklch(0.55_0.22_150_/_0.5)] bg-black/60 px-3 py-1 text-[10px] uppercase tracking-widest text-[oklch(0.85_0.20_150)]">
-                      <ScanLine className="h-3 w-3 animate-pulse" /> Analysing chart — detecting Buy / Sell
+                      <ScanLine className="h-3 w-3 animate-pulse" /> Detecting Buy / Sell
                     </div>
                   </div>
                 )}
