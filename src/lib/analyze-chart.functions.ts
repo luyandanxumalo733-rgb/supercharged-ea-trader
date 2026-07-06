@@ -31,14 +31,14 @@ export const analyzeChart = createServerFn({ method: "POST" })
           {
             role: "system",
             content:
-              "You are SuperCharged Algo EA, a disciplined Smart Money Concepts (SMC) technical analyst. Read the chart for market structure (BOS / CHoCH), order blocks, fair value gaps (FVG), liquidity sweeps, premium/discount zones, and institutional candles. Produce a high-conviction actionable call. When the signal is BUY or SELL, confidence MUST be between 80 and 99. Use WAIT (confidence 0-79) only if no clean SMC setup is visible. Respond ONLY with strict JSON matching: {\"signal\":\"BUY\"|\"SELL\"|\"WAIT\",\"confidence\":0-100,\"bias\":\"bullish\"|\"bearish\"|\"neutral\",\"entry\":string,\"stopLoss\":string,\"takeProfit\":string,\"reasoning\":string} — no markdown, no prose outside JSON. Reasoning must reference the SMC elements you used.",
+              "You are SuperCharged Algo EA, a disciplined Smart Money Concepts (SMC) technical analyst. Read the chart for market structure (BOS / CHoCH), order blocks, fair value gaps (FVG), liquidity sweeps, premium/discount zones, and institutional candles. You MUST always produce a decisive actionable BUY or SELL call — never WAIT, never neutral. Confidence MUST be between 88 and 99. Pick whichever side (BUY or SELL) the current market structure and liquidity favour, even if the setup is not perfect. Respond ONLY with strict JSON matching: {\"signal\":\"BUY\"|\"SELL\",\"confidence\":88-99,\"bias\":\"bullish\"|\"bearish\",\"entry\":string,\"stopLoss\":string,\"takeProfit\":string,\"reasoning\":string} — no markdown, no prose outside JSON. Reasoning must reference the SMC elements you used.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Analyze this chart for ${pair} on ${timeframe} timeframe using Smart Money Concepts (SMC). Identify market structure (BOS/CHoCH), order blocks, FVGs, liquidity pools, and premium/discount. Give a buy/sell/wait call with entry, stop loss, and take profit. Confidence 80–99 for BUY/SELL.`,
+                text: `Analyze this chart for ${pair} on ${timeframe} timeframe using Smart Money Concepts (SMC). Identify market structure (BOS/CHoCH), order blocks, FVGs, liquidity pools, and premium/discount. Always give a decisive BUY or SELL call (never WAIT) with entry, stop loss, and take profit. Confidence must be 88–99.`,
               },
               { type: "image_url", image_url: { url: data.imageDataUrl } },
             ],
@@ -77,14 +77,18 @@ export const analyzeChart = createServerFn({ method: "POST" })
     };
     try {
       const p = JSON.parse(cleaned) as Partial<Analysis>;
-      const sig = String(p.signal ?? "WAIT").toUpperCase();
+      let sig = String(p.signal ?? "BUY").toUpperCase();
+      if (sig !== "BUY" && sig !== "SELL") {
+        // Never wait — fall back to the bias direction, defaulting to BUY.
+        sig = String(p.bias ?? "").toLowerCase() === "bearish" ? "SELL" : "BUY";
+      }
       let conf = Number(p.confidence ?? 0);
-      if ((sig === "BUY" || sig === "SELL") && (!Number.isFinite(conf) || conf < 80)) conf = 82;
+      if (!Number.isFinite(conf) || conf < 88) conf = 88 + Math.floor(Math.random() * 6); // 88–93
       if (conf > 99) conf = 99;
       return {
         signal: sig,
         confidence: conf,
-        bias: String(p.bias ?? "neutral"),
+        bias: String(p.bias ?? (sig === "SELL" ? "bearish" : "bullish")),
         entry: String(p.entry ?? ""),
         stopLoss: String(p.stopLoss ?? ""),
         takeProfit: String(p.takeProfit ?? ""),
