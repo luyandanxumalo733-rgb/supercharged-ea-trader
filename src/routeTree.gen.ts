@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SymbolsRouteImport } from './routes/symbols'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MentorRouteImport } from './routes/mentor'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as BrokerRouteImport } from './routes/broker'
@@ -26,6 +27,11 @@ const SymbolsRoute = SymbolsRouteImport.update({
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorRoute = MentorRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/broker': typeof BrokerRoute
   '/history': typeof HistoryRoute
   '/mentor': typeof MentorRoute
+  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/broker': typeof BrokerRoute
   '/history': typeof HistoryRoute
   '/mentor': typeof MentorRoute
+  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/broker': typeof BrokerRoute
   '/history': typeof HistoryRoute
   '/mentor': typeof MentorRoute
+  '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/broker'
     | '/history'
     | '/mentor'
+    | '/settings'
     | '/setup'
     | '/symbols'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/broker'
     | '/history'
     | '/mentor'
+    | '/settings'
     | '/setup'
     | '/symbols'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/broker'
     | '/history'
     | '/mentor'
+    | '/settings'
     | '/setup'
     | '/symbols'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   BrokerRoute: typeof BrokerRoute
   HistoryRoute: typeof HistoryRoute
   MentorRoute: typeof MentorRoute
+  SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
   SymbolsRoute: typeof SymbolsRoute
 }
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentor': {
@@ -202,19 +222,10 @@ const rootRouteChildren: RootRouteChildren = {
   BrokerRoute: BrokerRoute,
   HistoryRoute: HistoryRoute,
   MentorRoute: MentorRoute,
+  SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
   SymbolsRoute: SymbolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
