@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle, ScanLine, Target } from "lucide-react";
 import { analyzeChart } from "@/lib/analyze-chart.functions";
 import robotLogo from "@/assets/robot-logo.png";
+import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/analyzer")({
   head: () => ({
@@ -204,6 +205,7 @@ function Analyzer() {
           </section>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }

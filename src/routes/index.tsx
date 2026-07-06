@@ -6,6 +6,7 @@ import robotLogo from "@/assets/robot-logo.png";
 import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server, Wifi, WifiOff, Rocket, CheckCircle2 } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
+import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -695,6 +696,7 @@ function Index() {
           <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
         </Link>
       </div>
+      <BottomNav />
     </div>
   );
 }
