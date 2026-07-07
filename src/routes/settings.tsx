@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Palette, Server, Link2, Rocket, Coins, KeyRound, History, Bell } from "lucide-react";
+import { ArrowLeft, Palette, Server, Link2, Rocket, Coins, KeyRound, History, Bell, Sun, Moon } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/settings")({
@@ -34,6 +34,7 @@ const LINKS: Array<{ to: "/bridge" | "/broker" | "/setup" | "/symbols" | "/mento
 function SettingsPage() {
   const [themeId, setThemeId] = useState("midnight");
   const [webhook, setWebhook] = useState("");
+  const [mode, setMode] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
     try {
@@ -41,6 +42,9 @@ function SettingsPage() {
       if (t) setThemeId(t);
       const w = localStorage.getItem("sc_alert_webhook");
       if (w) setWebhook(w);
+      const m = (localStorage.getItem("sc_mode") as "light" | "dark" | null) ?? "dark";
+      setMode(m);
+      document.documentElement.classList.toggle("dark", m === "dark");
     } catch { /* ignore */ }
   }, []);
 
@@ -49,6 +53,12 @@ function SettingsPage() {
   function pickTheme(id: string) {
     setThemeId(id);
     try { localStorage.setItem("sc_theme", id); } catch { /* ignore */ }
+  }
+
+  function pickMode(next: "light" | "dark") {
+    setMode(next);
+    document.documentElement.classList.toggle("dark", next === "dark");
+    try { localStorage.setItem("sc_mode", next); } catch { /* ignore */ }
   }
 
   function saveWebhook() {
@@ -92,6 +102,29 @@ function SettingsPage() {
               </button>
             ))}
           </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
+          <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+            {mode === "dark" ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />} Appearance
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => pickMode("light")}
+              className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold uppercase tracking-widest transition ${mode === "light" ? "border-white/50 bg-white/10" : "border-white/10 hover:border-white/25"}`}
+            >
+              <Sun className="h-4 w-4" /> Light
+            </button>
+            <button
+              onClick={() => pickMode("dark")}
+              className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold uppercase tracking-widest transition ${mode === "dark" ? "border-white/50 bg-white/10" : "border-white/10 hover:border-white/25"}`}
+            >
+              <Moon className="h-4 w-4" /> Dark
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Switches component contrast. Your colour theme stays the same.
+          </p>
         </section>
 
         <section className="mt-4 space-y-2">

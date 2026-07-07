@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server, Wifi, WifiOff, Rocket, CheckCircle2 } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Server, Wifi, WifiOff, Rocket } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
 import { BottomNav } from "@/components/BottomNav";
@@ -34,117 +34,54 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
 function Logo() {
   return (
     <div className="flex items-center gap-3">
-      <div
-        className="relative grid h-12 w-12 place-items-center rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 40%, oklch(0.55 0.22 255 / 0.9), oklch(0.20 0.10 260) 70%)",
-          boxShadow:
-            "0 0 24px oklch(0.62 0.22 255 / 0.7), inset 0 0 12px oklch(0.78 0.18 230 / 0.5)",
-        }}
-      >
+      <div className="relative h-14 w-14">
+        {/* rotating LED ring around the circular robot */}
         <span
-          className="pointer-events-none absolute inset-0 rounded-full"
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 rounded-full"
           style={{
-            background:
-              "radial-gradient(circle at 50% 100%, oklch(0.78 0.18 230 / 0.6), transparent 60%)",
+            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 70deg, transparent 140deg, var(--brand-glow) 220deg, transparent 290deg, var(--brand) 360deg)`,
+            mask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
+            WebkitMask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
+            animation: "spin 6s linear infinite",
           }}
         />
-        <img
-          src={robotLogo}
-          alt="SuperCharged robot mascot"
-          width={48}
-          height={48}
-          className="relative h-10 w-10 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
-        />
+        <div
+          className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 40%, var(--brand) , oklch(0.18 0.08 260) 70%)",
+            boxShadow:
+              "0 0 22px -2px var(--brand), inset 0 0 12px oklch(1 0 0 / 0.15)",
+          }}
+        >
+          <img
+            src={robotLogo}
+            alt="SuperCharged robot mascot"
+            width={48}
+            height={48}
+            className="relative h-11 w-11 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand-glow)]"
+          />
+        </div>
       </div>
       <div className="leading-tight">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.18_230)]">Algo EA</div>
-        <div className="text-base font-bold text-foreground">SuperCharged</div>
-      </div>
-    </div>
-  );
-}
-
-function ChartScanner({ running }: { running: boolean }) {
-  const [angle, setAngle] = useState(0);
-  const [scanned, setScanned] = useState(0);
-  const raf = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!running) return;
-    let last = performance.now();
-    const tick = (t: number) => {
-      const dt = t - last;
-      last = t;
-      setAngle((a) => (a + dt * 0.15) % 360);
-      setScanned((s) => (s + dt * 0.05) % 100);
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, [running]);
-
-  const bars = useMemo(
-    () => Array.from({ length: 28 }, (_, i) => 20 + Math.abs(Math.sin(i * 0.7 + angle * 0.05)) * 70),
-    [angle],
-  );
-
-  return (
-    <div
-      className="relative overflow-hidden rounded-2xl border border-white/10 p-4"
-      style={{
-        background:
-          "radial-gradient(120% 80% at 0% 0%, oklch(0.30 0.10 260 / 0.9), transparent 60%), radial-gradient(120% 80% at 100% 100%, oklch(0.30 0.12 200 / 0.8), transparent 60%), var(--surface)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute -inset-px opacity-40 transition-opacity"
-        style={{
-          background: "var(--gradient-scan)",
-          ["--scan-angle" as string]: `${angle}deg`,
-          maskImage: "radial-gradient(circle at center, black 0%, transparent 70%)",
-          opacity: running ? 0.55 : 0.15,
-        }}
-      />
-      <div className="relative flex items-center justify-between">
-        <div>
-          <div className="text-xs uppercase tracking-widest text-[oklch(0.75_0.18_230)]">
-            Chart Scanner
-          </div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {running ? "Scanning markets…" : "Idle"}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+        <div
+          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5"
+          style={{
+            borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
+            background: "color-mix(in oklab, var(--brand) 20%, transparent)",
+            boxShadow: "0 0 10px -2px var(--brand)",
+          }}
+        >
           <span
-            className={`h-2 w-2 rounded-full ${running ? "animate-pulse" : ""}`}
-            style={{ background: running ? "var(--success)" : "var(--muted-foreground)" }}
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: "var(--brand-glow)", boxShadow: "0 0 6px var(--brand-glow)", animation: "pulse 1.4s ease-in-out infinite" }}
           />
-          <span className="text-xs text-foreground">{running ? "LIVE" : "OFF"}</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-foreground/90">
+            Powered by Algo Trading
+          </span>
         </div>
-      </div>
-
-      <div className="relative mt-4 flex h-32 items-end gap-[3px]">
-        {bars.map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-sm transition-all"
-            style={{
-              height: `${h}%`,
-              background: `linear-gradient(180deg, oklch(${0.55 + (h / 400)} 0.22 ${200 + (i * 6) % 80}), oklch(0.40 0.20 ${260}))`,
-              opacity: running ? 1 : 0.4,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="relative mt-3 flex justify-between text-[10px] text-muted-foreground">
-        <span>SCAN {scanned.toFixed(1)}%</span>
-        <span>SIGNAL OK</span>
-        <span>LAT 12ms</span>
+        <div className="mt-1 text-base font-bold text-foreground">SuperCharged</div>
       </div>
     </div>
   );
@@ -314,9 +251,16 @@ function RobotHero({ running }: { running: boolean }) {
           </span>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 rounded-full border border-[oklch(0.60_0.20_30_/_0.4)] bg-[oklch(0.30_0.16_30_/_0.4)] px-3 py-1">
-          <Zap className="h-3.5 w-3.5 text-[oklch(0.85_0.20_30)]" />
-          <span className="text-[11px] font-semibold tracking-widest text-[oklch(0.92_0.16_60)]">99.9% HIGH SPREADS</span>
+        <div
+          className="mt-3 flex items-center gap-2 rounded-full border px-3 py-1"
+          style={{
+            borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
+            background: "color-mix(in oklab, var(--brand) 25%, transparent)",
+            boxShadow: "0 0 18px -4px var(--brand)",
+          }}
+        >
+          <Zap className="h-3.5 w-3.5" style={{ color: "var(--brand-glow)" }} />
+          <span className="text-[11px] font-extrabold tracking-widest text-foreground">100% EP · MAX PERFORMANCE</span>
         </div>
       </div>
     </section>
@@ -332,9 +276,6 @@ function Index() {
   const [brokerConnected, setBrokerConnected] = useState(false);
   const [themeId, setThemeIdState] = useState("midnight");
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
-  const [algoOn, setAlgoOn] = useState(false);
-  const [validated, setValidated] = useState(false);
-  const [bridgeUrl, setBridgeUrl] = useState<string | null>(null);
   const [heartbeat, setHeartbeat] = useState<{ ok: boolean; latencyMs: number; at: number } | null>(null);
   const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
   const fire = useServerFn(executeTrade);
@@ -345,11 +286,6 @@ function Index() {
       setBrokerConnected(!!localStorage.getItem("sc_broker"));
       const t = localStorage.getItem("sc_theme");
       if (t) setThemeIdState(t);
-      const a = localStorage.getItem("sc_algo");
-      if (a === "1") setAlgoOn(true);
-      setValidated(localStorage.getItem("sc_bridge_validated") === "1");
-      const b = localStorage.getItem("sc_broker");
-      if (b) { const j = JSON.parse(b); setBridgeUrl(j.bridgeUrl || null); }
     } catch { /* ignore */ }
   }, [menuOpen]);
 
@@ -360,28 +296,17 @@ function Index() {
 
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
 
-  function toggleAlgo() {
-    if (!algoOn && !validated) {
-      setExec({ status: "Setup required", detail: "Run the Setup Wizard to validate the bridge before enabling 24/7." });
-      return;
-    }
-    const next = !algoOn;
-    setAlgoOn(next);
-    try { localStorage.setItem("sc_algo", next ? "1" : "0"); } catch { /* */ }
-    if (next && !running) handleStart();
-  }
-
-  // 24/7 auto-execute loop: when Algo Trading is ON, fire orders every 60s.
+  // 24/7 auto-execute loop: while the bot is running, fire orders every 60s.
   useEffect(() => {
-    if (!algoOn) return;
+    if (!running) return;
     const id = setInterval(() => { handleStart(); }, 60_000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [algoOn]);
+  }, [running]);
 
-  // Bridge heartbeat: ping /health every 10s while Algo is ON.
+  // Bridge heartbeat: ping /health every 10s while the bot is running.
   useEffect(() => {
-    if (!algoOn) return;
+    if (!running) return;
     let cancelled = false;
     let failStreak = 0;
     const LATENCY_SPIKE_MS = 1500;
@@ -421,7 +346,7 @@ function Index() {
     tick();
     const id = setInterval(tick, 10_000);
     return () => { cancelled = true; clearInterval(id); };
-  }, [algoOn, heartbeatFn]);
+  }, [running, heartbeatFn]);
 
   function recordTrade(t: { symbol: string; side: "BUY" | "SELL"; lot: number; tp: number; sl: number; ok: boolean; status: number; attempts?: number; body?: string }) {
     try {
@@ -497,6 +422,37 @@ function Index() {
           filter: "drop-shadow(0 0 40px var(--brand))",
         }}
       />
+      {/* Rotating LED ring surrounding the background robot */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed left-1/2 top-[55%] z-0 -translate-x-1/2 -translate-y-1/2"
+        style={{
+          width: "min(92vw, 560px)",
+          height: "min(92vw, 560px)",
+        }}
+      >
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 80deg, transparent 160deg, var(--brand-glow) 240deg, transparent 320deg, var(--brand) 360deg)`,
+            mask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
+            WebkitMask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
+            animation: "spin 14s linear infinite",
+            opacity: 0.55,
+            filter: "drop-shadow(0 0 12px var(--brand))",
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `conic-gradient(from 180deg, transparent 0deg, var(--brand-glow) 60deg, transparent 140deg, var(--brand) 220deg, transparent 300deg)`,
+            mask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
+            WebkitMask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
+            animation: "spin 22s linear infinite reverse",
+            opacity: 0.4,
+          }}
+        />
+      </div>
       <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
         <header className="flex items-center justify-between">
           <Logo />
@@ -513,52 +469,7 @@ function Index() {
 
         <RobotHero running={running} />
 
-        <section className="mt-4 flex items-center justify-between rounded-2xl border border-[oklch(0.55_0.22_255_/_0.35)] bg-[oklch(0.22_0.10_260_/_0.5)] p-3">
-          <div className="flex items-center gap-3">
-            <span
-              className="grid h-10 w-10 place-items-center rounded-xl"
-              style={{
-                background: algoOn ? "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))" : "oklch(0.20 0.05 260)",
-                boxShadow: algoOn ? "0 0 18px -2px oklch(0.62 0.22 255)" : "none",
-              }}
-            >
-              <Power className="h-5 w-5 text-white" />
-            </span>
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Algo Trading</div>
-              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : validated ? "Disabled" : "Setup required"}</div>
-            </div>
-          </div>
-          <button
-            onClick={toggleAlgo}
-            aria-pressed={algoOn}
-            className={`relative h-7 w-12 rounded-full border transition ${algoOn ? "border-[oklch(0.62_0.22_255)] bg-[oklch(0.40_0.20_255)]" : "border-white/20 bg-white/10"}`}
-          >
-            <span
-              className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all"
-              style={{ left: algoOn ? "calc(100% - 1.625rem)" : "0.125rem", boxShadow: algoOn ? "0 0 10px oklch(0.78 0.20 230)" : "none" }}
-            />
-          </button>
-        </section>
-
-        {!validated && (
-          <Link
-            to="/setup"
-            className="mt-3 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.22_230_/_0.5)] p-3 transition hover:brightness-110"
-            style={{ background: "linear-gradient(135deg, oklch(0.30 0.18 230 / 0.45), oklch(0.22 0.08 260))" }}
-          >
-            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.62 0.22 230)" }}>
-              <Rocket className="h-5 w-5 text-white" />
-            </span>
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.18_230)]">Required</div>
-              <div className="text-sm font-semibold">Run Setup Wizard to validate bridge</div>
-            </div>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Start →</span>
-          </Link>
-        )}
-
-        {algoOn && (
+        {running && (
           <section className="mt-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3">
             <div className="flex items-center justify-between">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Live Execution</div>
@@ -583,28 +494,7 @@ function Index() {
                 </div>
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-[oklch(0.55_0.22_255_/_0.3)] bg-[oklch(0.22_0.10_260_/_0.5)] px-2 py-1.5 text-[10px]">
-              <CheckCircle2 className="h-3.5 w-3.5 text-[oklch(0.85_0.20_230)]" />
-              <span className="font-semibold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">Visible in MT5 · Magic #20260617</span>
-            </div>
           </section>
-        )}
-
-        {!brokerConnected && (
-          <Link
-            to="/broker"
-            className="mt-4 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.18_85_/_0.4)] p-3 transition hover:brightness-110"
-            style={{ background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" }}
-          >
-            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.65 0.22 60)" }}>
-              <Sparkles className="h-5 w-5 text-white" />
-            </span>
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.16_85)]">Recommended</div>
-              <div className="text-sm font-semibold">Link your Headway MT5 account</div>
-            </div>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Setup →</span>
-          </Link>
         )}
 
         <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
@@ -630,23 +520,28 @@ function Index() {
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button
-              onClick={handleStart}
-              disabled={running}
-              className="rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98] disabled:opacity-40"
+              onClick={() => {
+                if (running) { setRunning(false); setExec(null); }
+                else { void handleStart(); }
+              }}
+              className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
               style={{
-                background: `linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))`,
-                boxShadow: running ? "none" : "0 0 24px -4px var(--brand)",
+                background: running
+                  ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
+                  : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+                boxShadow: running
+                  ? "0 0 24px -4px var(--danger)"
+                  : "0 0 24px -4px var(--brand)",
               }}
             >
-              ▶ Start
+              {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
             </button>
-            <button
-              onClick={() => { setRunning(false); setExec(null); }}
-              disabled={!running}
-              className="rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] disabled:opacity-40 hover:bg-white/10"
+            <Link
+              to="/symbols"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
-              ■ Stop
-            </button>
+              <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} /> Symbols
+            </Link>
           </div>
 
           {exec && (
@@ -657,25 +552,9 @@ function Index() {
           )}
         </section>
 
-        <section className="mt-4">
-          <ChartScanner running={running} />
-        </section>
-
-        <div className="mt-4">
-          <Link to="/symbols" className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10">
-            <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ background: "oklch(0.78 0.16 85)" }}>
-              <Coins className="h-4 w-4 text-white" />
-            </span>
-            <div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Pairs &amp; TP/SL</div>
-              <div className="text-sm font-semibold">Symbols</div>
-            </div>
-          </Link>
-        </div>
-
         <Link
           to="/mentor"
-          className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
+          className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
         >
           <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.70 0.22 290), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.70 0.22 290)" }}>
             <KeyRound className="h-4 w-4 text-white" />
@@ -683,6 +562,21 @@ function Index() {
           <div className="flex-1">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Host another robot</div>
             <div className="text-sm font-semibold">Mentor Keys — generate licenses</div>
+          </div>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
+        </Link>
+
+        <Link
+          to="/broker"
+          className={`mt-3 flex items-center gap-3 rounded-2xl border p-3 transition hover:brightness-110 ${brokerConnected ? "border-white/10 bg-[var(--surface)]" : "border-[oklch(0.55_0.18_85_/_0.4)]"}`}
+          style={!brokerConnected ? { background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" } : undefined}
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 60), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.78 0.18 60)" }}>
+            <Link2 className="h-4 w-4 text-white" />
+          </span>
+          <div className="flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{brokerConnected ? "Connected" : "Recommended"}</div>
+            <div className="text-sm font-semibold">Broker Connection — MT5 account</div>
           </div>
           <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
         </Link>
