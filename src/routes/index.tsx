@@ -450,52 +450,7 @@ function Index() {
 
         <RobotHero running={running} />
 
-        <section className="mt-4 flex items-center justify-between rounded-2xl border border-[oklch(0.55_0.22_255_/_0.35)] bg-[oklch(0.22_0.10_260_/_0.5)] p-3">
-          <div className="flex items-center gap-3">
-            <span
-              className="grid h-10 w-10 place-items-center rounded-xl"
-              style={{
-                background: algoOn ? "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))" : "oklch(0.20 0.05 260)",
-                boxShadow: algoOn ? "0 0 18px -2px oklch(0.62 0.22 255)" : "none",
-              }}
-            >
-              <Power className="h-5 w-5 text-white" />
-            </span>
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.20_230)]">Algo Trading</div>
-              <div className="text-sm font-semibold">{algoOn ? "ENABLED — 24/7 auto-execute" : validated ? "Disabled" : "Setup required"}</div>
-            </div>
-          </div>
-          <button
-            onClick={toggleAlgo}
-            aria-pressed={algoOn}
-            className={`relative h-7 w-12 rounded-full border transition ${algoOn ? "border-[oklch(0.62_0.22_255)] bg-[oklch(0.40_0.20_255)]" : "border-white/20 bg-white/10"}`}
-          >
-            <span
-              className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all"
-              style={{ left: algoOn ? "calc(100% - 1.625rem)" : "0.125rem", boxShadow: algoOn ? "0 0 10px oklch(0.78 0.20 230)" : "none" }}
-            />
-          </button>
-        </section>
-
-        {!validated && (
-          <Link
-            to="/setup"
-            className="mt-3 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.22_230_/_0.5)] p-3 transition hover:brightness-110"
-            style={{ background: "linear-gradient(135deg, oklch(0.30 0.18 230 / 0.45), oklch(0.22 0.08 260))" }}
-          >
-            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.62 0.22 230)" }}>
-              <Rocket className="h-5 w-5 text-white" />
-            </span>
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.18_230)]">Required</div>
-              <div className="text-sm font-semibold">Run Setup Wizard to validate bridge</div>
-            </div>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Start →</span>
-          </Link>
-        )}
-
-        {algoOn && (
+        {running && (
           <section className="mt-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3">
             <div className="flex items-center justify-between">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Live Execution</div>
@@ -520,28 +475,7 @@ function Index() {
                 </div>
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-[oklch(0.55_0.22_255_/_0.3)] bg-[oklch(0.22_0.10_260_/_0.5)] px-2 py-1.5 text-[10px]">
-              <CheckCircle2 className="h-3.5 w-3.5 text-[oklch(0.85_0.20_230)]" />
-              <span className="font-semibold uppercase tracking-widest text-[oklch(0.85_0.20_230)]">Visible in MT5 · Magic #20260617</span>
-            </div>
           </section>
-        )}
-
-        {!brokerConnected && (
-          <Link
-            to="/broker"
-            className="mt-4 flex items-center gap-3 rounded-2xl border border-[oklch(0.55_0.18_85_/_0.4)] p-3 transition hover:brightness-110"
-            style={{ background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" }}
-          >
-            <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "oklch(0.65 0.22 60)" }}>
-              <Sparkles className="h-5 w-5 text-white" />
-            </span>
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-[oklch(0.85_0.16_85)]">Recommended</div>
-              <div className="text-sm font-semibold">Link your Headway MT5 account</div>
-            </div>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Setup →</span>
-          </Link>
         )}
 
         <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
@@ -567,23 +501,28 @@ function Index() {
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button
-              onClick={handleStart}
-              disabled={running}
-              className="rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98] disabled:opacity-40"
+              onClick={() => {
+                if (running) { setRunning(false); setExec(null); }
+                else { void handleStart(); }
+              }}
+              className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
               style={{
-                background: `linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))`,
-                boxShadow: running ? "none" : "0 0 24px -4px var(--brand)",
+                background: running
+                  ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
+                  : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+                boxShadow: running
+                  ? "0 0 24px -4px var(--danger)"
+                  : "0 0 24px -4px var(--brand)",
               }}
             >
-              ▶ Start
+              {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
             </button>
-            <button
-              onClick={() => { setRunning(false); setExec(null); }}
-              disabled={!running}
-              className="rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] disabled:opacity-40 hover:bg-white/10"
+            <Link
+              to="/symbols"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
-              ■ Stop
-            </button>
+              <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} /> Symbols
+            </Link>
           </div>
 
           {exec && (
@@ -594,25 +533,9 @@ function Index() {
           )}
         </section>
 
-        <section className="mt-4">
-          <ChartScanner running={running} />
-        </section>
-
-        <div className="mt-4">
-          <Link to="/symbols" className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10">
-            <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ background: "oklch(0.78 0.16 85)" }}>
-              <Coins className="h-4 w-4 text-white" />
-            </span>
-            <div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Pairs &amp; TP/SL</div>
-              <div className="text-sm font-semibold">Symbols</div>
-            </div>
-          </Link>
-        </div>
-
         <Link
           to="/mentor"
-          className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
+          className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
         >
           <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.70 0.22 290), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.70 0.22 290)" }}>
             <KeyRound className="h-4 w-4 text-white" />
@@ -620,6 +543,21 @@ function Index() {
           <div className="flex-1">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Host another robot</div>
             <div className="text-sm font-semibold">Mentor Keys — generate licenses</div>
+          </div>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
+        </Link>
+
+        <Link
+          to="/broker"
+          className={`mt-3 flex items-center gap-3 rounded-2xl border p-3 transition hover:brightness-110 ${brokerConnected ? "border-white/10 bg-[var(--surface)]" : "border-[oklch(0.55_0.18_85_/_0.4)]"}`}
+          style={!brokerConnected ? { background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" } : undefined}
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 60), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.78 0.18 60)" }}>
+            <Link2 className="h-4 w-4 text-white" />
+          </span>
+          <div className="flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{brokerConnected ? "Connected" : "Recommended"}</div>
+            <div className="text-sm font-semibold">Broker Connection — MT5 account</div>
           </div>
           <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
         </Link>
