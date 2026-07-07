@@ -251,9 +251,16 @@ function RobotHero({ running }: { running: boolean }) {
           </span>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 rounded-full border border-[oklch(0.60_0.20_30_/_0.4)] bg-[oklch(0.30_0.16_30_/_0.4)] px-3 py-1">
-          <Zap className="h-3.5 w-3.5 text-[oklch(0.85_0.20_30)]" />
-          <span className="text-[11px] font-semibold tracking-widest text-[oklch(0.92_0.16_60)]">99.9% HIGH SPREADS</span>
+        <div
+          className="mt-3 flex items-center gap-2 rounded-full border px-3 py-1"
+          style={{
+            borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
+            background: "color-mix(in oklab, var(--brand) 25%, transparent)",
+            boxShadow: "0 0 18px -4px var(--brand)",
+          }}
+        >
+          <Zap className="h-3.5 w-3.5" style={{ color: "var(--brand-glow)" }} />
+          <span className="text-[11px] font-extrabold tracking-widest text-foreground">100% EP · MAX PERFORMANCE</span>
         </div>
       </div>
     </section>
