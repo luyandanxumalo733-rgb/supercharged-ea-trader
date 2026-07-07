@@ -422,6 +422,37 @@ function Index() {
           filter: "drop-shadow(0 0 40px var(--brand))",
         }}
       />
+      {/* Rotating LED ring surrounding the background robot */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed left-1/2 top-[55%] z-0 -translate-x-1/2 -translate-y-1/2"
+        style={{
+          width: "min(92vw, 560px)",
+          height: "min(92vw, 560px)",
+        }}
+      >
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 80deg, transparent 160deg, var(--brand-glow) 240deg, transparent 320deg, var(--brand) 360deg)`,
+            mask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
+            WebkitMask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
+            animation: "spin 14s linear infinite",
+            opacity: 0.55,
+            filter: "drop-shadow(0 0 12px var(--brand))",
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `conic-gradient(from 180deg, transparent 0deg, var(--brand-glow) 60deg, transparent 140deg, var(--brand) 220deg, transparent 300deg)`,
+            mask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
+            WebkitMask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
+            animation: "spin 22s linear infinite reverse",
+            opacity: 0.4,
+          }}
+        />
+      </div>
       <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
         <header className="flex items-center justify-between">
           <Logo />
