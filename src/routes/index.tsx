@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Sparkles, Palette, Coins, Zap, KeyRound, Power, Server, Wifi, WifiOff, Rocket, CheckCircle2 } from "lucide-react";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Server, Wifi, WifiOff, Rocket } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
 import { BottomNav } from "@/components/BottomNav";
@@ -34,117 +34,54 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
 function Logo() {
   return (
     <div className="flex items-center gap-3">
-      <div
-        className="relative grid h-12 w-12 place-items-center rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 40%, oklch(0.55 0.22 255 / 0.9), oklch(0.20 0.10 260) 70%)",
-          boxShadow:
-            "0 0 24px oklch(0.62 0.22 255 / 0.7), inset 0 0 12px oklch(0.78 0.18 230 / 0.5)",
-        }}
-      >
+      <div className="relative h-14 w-14">
+        {/* rotating LED ring around the circular robot */}
         <span
-          className="pointer-events-none absolute inset-0 rounded-full"
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 rounded-full"
           style={{
-            background:
-              "radial-gradient(circle at 50% 100%, oklch(0.78 0.18 230 / 0.6), transparent 60%)",
+            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 70deg, transparent 140deg, var(--brand-glow) 220deg, transparent 290deg, var(--brand) 360deg)`,
+            mask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
+            WebkitMask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
+            animation: "spin 6s linear infinite",
           }}
         />
-        <img
-          src={robotLogo}
-          alt="SuperCharged robot mascot"
-          width={48}
-          height={48}
-          className="relative h-10 w-10 object-contain drop-shadow-[0_0_6px_oklch(0.78_0.18_230)]"
-        />
+        <div
+          className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 40%, var(--brand) , oklch(0.18 0.08 260) 70%)",
+            boxShadow:
+              "0 0 22px -2px var(--brand), inset 0 0 12px oklch(1 0 0 / 0.15)",
+          }}
+        >
+          <img
+            src={robotLogo}
+            alt="SuperCharged robot mascot"
+            width={48}
+            height={48}
+            className="relative h-11 w-11 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand-glow)]"
+          />
+        </div>
       </div>
       <div className="leading-tight">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.78_0.18_230)]">Algo EA</div>
-        <div className="text-base font-bold text-foreground">SuperCharged</div>
-      </div>
-    </div>
-  );
-}
-
-function ChartScanner({ running }: { running: boolean }) {
-  const [angle, setAngle] = useState(0);
-  const [scanned, setScanned] = useState(0);
-  const raf = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (!running) return;
-    let last = performance.now();
-    const tick = (t: number) => {
-      const dt = t - last;
-      last = t;
-      setAngle((a) => (a + dt * 0.15) % 360);
-      setScanned((s) => (s + dt * 0.05) % 100);
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current);
-    };
-  }, [running]);
-
-  const bars = useMemo(
-    () => Array.from({ length: 28 }, (_, i) => 20 + Math.abs(Math.sin(i * 0.7 + angle * 0.05)) * 70),
-    [angle],
-  );
-
-  return (
-    <div
-      className="relative overflow-hidden rounded-2xl border border-white/10 p-4"
-      style={{
-        background:
-          "radial-gradient(120% 80% at 0% 0%, oklch(0.30 0.10 260 / 0.9), transparent 60%), radial-gradient(120% 80% at 100% 100%, oklch(0.30 0.12 200 / 0.8), transparent 60%), var(--surface)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute -inset-px opacity-40 transition-opacity"
-        style={{
-          background: "var(--gradient-scan)",
-          ["--scan-angle" as string]: `${angle}deg`,
-          maskImage: "radial-gradient(circle at center, black 0%, transparent 70%)",
-          opacity: running ? 0.55 : 0.15,
-        }}
-      />
-      <div className="relative flex items-center justify-between">
-        <div>
-          <div className="text-xs uppercase tracking-widest text-[oklch(0.75_0.18_230)]">
-            Chart Scanner
-          </div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {running ? "Scanning markets…" : "Idle"}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+        <div
+          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5"
+          style={{
+            borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
+            background: "color-mix(in oklab, var(--brand) 20%, transparent)",
+            boxShadow: "0 0 10px -2px var(--brand)",
+          }}
+        >
           <span
-            className={`h-2 w-2 rounded-full ${running ? "animate-pulse" : ""}`}
-            style={{ background: running ? "var(--success)" : "var(--muted-foreground)" }}
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: "var(--brand-glow)", boxShadow: "0 0 6px var(--brand-glow)", animation: "pulse 1.4s ease-in-out infinite" }}
           />
-          <span className="text-xs text-foreground">{running ? "LIVE" : "OFF"}</span>
+          <span className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-foreground/90">
+            Powered by Algo Trading
+          </span>
         </div>
-      </div>
-
-      <div className="relative mt-4 flex h-32 items-end gap-[3px]">
-        {bars.map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-sm transition-all"
-            style={{
-              height: `${h}%`,
-              background: `linear-gradient(180deg, oklch(${0.55 + (h / 400)} 0.22 ${200 + (i * 6) % 80}), oklch(0.40 0.20 ${260}))`,
-              opacity: running ? 1 : 0.4,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="relative mt-3 flex justify-between text-[10px] text-muted-foreground">
-        <span>SCAN {scanned.toFixed(1)}%</span>
-        <span>SIGNAL OK</span>
-        <span>LAT 12ms</span>
+        <div className="mt-1 text-base font-bold text-foreground">SuperCharged</div>
       </div>
     </div>
   );
