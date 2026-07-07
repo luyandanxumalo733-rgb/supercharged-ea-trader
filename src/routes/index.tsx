@@ -661,7 +661,7 @@ function Index() {
           <ChartScanner running={running} />
         </section>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4">
           <Link to="/symbols" className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10">
             <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ background: "oklch(0.78 0.16 85)" }}>
               <Coins className="h-4 w-4 text-white" />
@@ -669,15 +669,6 @@ function Index() {
             <div>
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Pairs &amp; TP/SL</div>
               <div className="text-sm font-semibold">Symbols</div>
-            </div>
-          </Link>
-          <Link to="/analyzer" className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10">
-            <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ background: "var(--brand)" }}>
-              <ScanLine className="h-4 w-4 text-white" />
-            </span>
-            <div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">AI Vision</div>
-              <div className="text-sm font-semibold">Analyzer</div>
             </div>
           </Link>
         </div>
