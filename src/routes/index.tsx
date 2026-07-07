@@ -269,9 +269,6 @@ function Index() {
   const [brokerConnected, setBrokerConnected] = useState(false);
   const [themeId, setThemeIdState] = useState("midnight");
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
-  const [algoOn, setAlgoOn] = useState(false);
-  const [validated, setValidated] = useState(false);
-  const [bridgeUrl, setBridgeUrl] = useState<string | null>(null);
   const [heartbeat, setHeartbeat] = useState<{ ok: boolean; latencyMs: number; at: number } | null>(null);
   const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
   const fire = useServerFn(executeTrade);
@@ -282,11 +279,6 @@ function Index() {
       setBrokerConnected(!!localStorage.getItem("sc_broker"));
       const t = localStorage.getItem("sc_theme");
       if (t) setThemeIdState(t);
-      const a = localStorage.getItem("sc_algo");
-      if (a === "1") setAlgoOn(true);
-      setValidated(localStorage.getItem("sc_bridge_validated") === "1");
-      const b = localStorage.getItem("sc_broker");
-      if (b) { const j = JSON.parse(b); setBridgeUrl(j.bridgeUrl || null); }
     } catch { /* ignore */ }
   }, [menuOpen]);
 
@@ -297,28 +289,17 @@ function Index() {
 
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
 
-  function toggleAlgo() {
-    if (!algoOn && !validated) {
-      setExec({ status: "Setup required", detail: "Run the Setup Wizard to validate the bridge before enabling 24/7." });
-      return;
-    }
-    const next = !algoOn;
-    setAlgoOn(next);
-    try { localStorage.setItem("sc_algo", next ? "1" : "0"); } catch { /* */ }
-    if (next && !running) handleStart();
-  }
-
-  // 24/7 auto-execute loop: when Algo Trading is ON, fire orders every 60s.
+  // 24/7 auto-execute loop: while the bot is running, fire orders every 60s.
   useEffect(() => {
-    if (!algoOn) return;
+    if (!running) return;
     const id = setInterval(() => { handleStart(); }, 60_000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [algoOn]);
+  }, [running]);
 
-  // Bridge heartbeat: ping /health every 10s while Algo is ON.
+  // Bridge heartbeat: ping /health every 10s while the bot is running.
   useEffect(() => {
-    if (!algoOn) return;
+    if (!running) return;
     let cancelled = false;
     let failStreak = 0;
     const LATENCY_SPIKE_MS = 1500;
@@ -358,7 +339,7 @@ function Index() {
     tick();
     const id = setInterval(tick, 10_000);
     return () => { cancelled = true; clearInterval(id); };
-  }, [algoOn, heartbeatFn]);
+  }, [running, heartbeatFn]);
 
   function recordTrade(t: { symbol: string; side: "BUY" | "SELL"; lot: number; tp: number; sl: number; ok: boolean; status: number; attempts?: number; body?: string }) {
     try {
