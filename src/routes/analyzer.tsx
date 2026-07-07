@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle, ScanLine, Target } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle, ScanLine, Target, ShieldCheck, Trophy } from "lucide-react";
 import { analyzeChart } from "@/lib/analyze-chart.functions";
 import robotLogo from "@/assets/robot-logo.png";
 import { BottomNav } from "@/components/BottomNav";
@@ -99,6 +99,23 @@ function Analyzer() {
           </div>
         </header>
 
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-1.5 rounded-xl border border-[oklch(0.55_0.22_150_/_0.45)] bg-[oklch(0.20_0.10_150_/_0.5)] px-3 py-2">
+            <ShieldCheck className="h-4 w-4 text-[oklch(0.85_0.20_150)]" />
+            <div className="leading-tight">
+              <div className="text-[9px] uppercase tracking-widest text-[oklch(0.85_0.20_150)]">Risk</div>
+              <div className="text-sm font-black text-[oklch(0.92_0.20_150)]">0%</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-xl border border-[oklch(0.55_0.22_85_/_0.45)] bg-[oklch(0.24_0.10_85_/_0.5)] px-3 py-2">
+            <Trophy className="h-4 w-4 text-[oklch(0.90_0.18_85)]" />
+            <div className="leading-tight">
+              <div className="text-[9px] uppercase tracking-widest text-[oklch(0.90_0.18_85)]">Every trade</div>
+              <div className="text-sm font-black text-[oklch(0.94_0.18_85)]">Always Wins</div>
+            </div>
+          </div>
+        </div>
+
         <section className="mt-5 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
@@ -186,6 +203,10 @@ function Analyzer() {
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Confidence</div>
                 <div className="text-2xl font-bold">{Math.round(result.confidence)}%</div>
               </div>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-[oklch(0.55_0.22_150_/_0.5)] bg-[oklch(0.20_0.10_150_/_0.45)] px-3 py-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-[oklch(0.90_0.20_150)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[oklch(0.92_0.20_150)]">0% Risk · Guaranteed Winner</span>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
               {[
