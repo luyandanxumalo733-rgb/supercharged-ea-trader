@@ -528,35 +528,42 @@ function Index() {
                 <span className="text-lg font-semibold">{running ? "Running" : "Stopped"}</span>
               </div>
             </div>
-            <Link to="/symbols" className="text-right">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Symbols</div>
-              <div className="mt-1 text-sm font-semibold underline-offset-2 hover:underline">Manage →</div>
-            </Link>
+            <div className="text-right">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Mode</div>
+              <div className="mt-1 text-sm font-semibold">{brokerConnected ? "Auto-Trade" : "Not linked"}</div>
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => {
-                if (running) { setRunning(false); setExec(null); }
-                else { void handleStart(); }
-              }}
-              className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
-              style={{
-                background: running
-                  ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
-                  : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
-                boxShadow: running
-                  ? "0 0 24px -4px var(--danger)"
-                  : "0 0 24px -4px var(--brand)",
-              }}
-            >
-              {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
-            </button>
+          <button
+            onClick={() => {
+              if (running) { setRunning(false); setExec(null); }
+              else { void handleStart(); }
+            }}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
+            style={{
+              background: running
+                ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
+                : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+              boxShadow: running
+                ? "0 0 24px -4px var(--danger)"
+                : "0 0 24px -4px var(--brand)",
+            }}
+          >
+            {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
+          </button>
+
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <Link
               to="/symbols"
               className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
               <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} /> Symbols
+            </Link>
+            <Link
+              to="/broker"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
+            >
+              <Link2 className="h-4 w-4" style={{ color: "oklch(0.78 0.18 60)" }} /> Broker
             </Link>
           </div>
 
@@ -582,20 +589,6 @@ function Index() {
           <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
         </Link>
 
-        <Link
-          to="/broker"
-          className={`mt-3 flex items-center gap-3 rounded-2xl border p-3 transition hover:brightness-110 ${brokerConnected ? "border-white/10 bg-[var(--surface)]" : "border-[oklch(0.55_0.18_85_/_0.4)]"}`}
-          style={!brokerConnected ? { background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" } : undefined}
-        >
-          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 60), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.78 0.18 60)" }}>
-            <Link2 className="h-4 w-4 text-white" />
-          </span>
-          <div className="flex-1">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{brokerConnected ? "Connected" : "Recommended"}</div>
-            <div className="text-sm font-semibold">Broker Connection — MT5 account</div>
-          </div>
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
-        </Link>
       </div>
       <BottomNav />
     </div>
