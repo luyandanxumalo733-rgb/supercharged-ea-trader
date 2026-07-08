@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Server, Wifi, WifiOff, Rocket } from "lucide-react";
+import meditatingRobot from "@/assets/meditating-robot-rain.png";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Wifi, WifiOff } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
 import { BottomNav } from "@/components/BottomNav";
@@ -91,14 +92,12 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge" | "/setup" | "/history";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/history";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
-  { icon: Server,          label: "MT5 Bridge",        color: "oklch(0.70 0.20 200)", to: "/bridge" },
-  { icon: Rocket,          label: "Setup Wizard",      color: "oklch(0.72 0.22 230)", to: "/setup" },
   { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)", to: "/history" },
   { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
