@@ -501,6 +501,74 @@ function Index() {
 
         <RobotHero running={running} />
 
+        <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">MetaApi · Live Account</div>
+              <div className="mt-0.5 text-sm font-semibold">
+                {metrics?.ok ? `${metrics.broker || "Broker"} · #${metrics.login}` : "Awaiting connection…"}
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{
+                  background: metrics?.ok ? "var(--success)" : "var(--danger)",
+                  boxShadow: metrics?.ok ? "0 0 10px var(--success)" : "none",
+                }}
+              />
+              <span className="uppercase tracking-widest">
+                {metrics ? (metrics.ok ? `${metrics.region} · cloud-g2` : "offline") : "…"}
+              </span>
+            </div>
+          </div>
+
+          {metrics?.ok ? (
+            <>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Balance</div>
+                  <div className="mt-0.5 font-mono text-sm">{metrics.balance.toFixed(2)}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Equity</div>
+                  <div className="mt-0.5 font-mono text-sm">{metrics.equity.toFixed(2)}</div>
+                </div>
+                <div
+                  className="rounded-lg border border-white/10 bg-black/30 p-2"
+                  style={{ color: metrics.profit >= 0 ? "var(--success)" : "var(--danger)" }}
+                >
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">P/L</div>
+                  <div className="mt-0.5 font-mono text-sm">{metrics.profit >= 0 ? "+" : ""}{metrics.profit.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Free Margin</div>
+                  <div className="mt-0.5 font-mono text-xs">{metrics.freeMargin.toFixed(2)}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Leverage</div>
+                  <div className="mt-0.5 font-mono text-xs">1:{metrics.leverage || "—"}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/30 p-2">
+                  <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Open</div>
+                  <div className="mt-0.5 font-mono text-xs">{metrics.openPositions}</div>
+                </div>
+              </div>
+              <div className="mt-2 text-[10px] text-muted-foreground">
+                {metrics.server} · {metrics.currency} · {metrics.type || "live"}
+              </div>
+            </>
+          ) : (
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/30 p-2 text-[11px] text-muted-foreground">
+              {metrics && !metrics.ok
+                ? metrics.error
+                : "Connecting to mt-client-api-v1.new-york.agiliumtrade.ai…"}
+            </div>
+          )}
+        </section>
+
         {running && (
           <section className="mt-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3">
             <div className="flex items-center justify-between">
