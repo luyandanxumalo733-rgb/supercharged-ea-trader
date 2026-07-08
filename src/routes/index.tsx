@@ -288,6 +288,21 @@ function Index() {
   const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
   const fire = useServerFn(executeTrade);
   const heartbeatFn = useServerFn(pingBridge);
+  const metricsFn = useServerFn(getAccountMetrics);
+  type Metrics = Awaited<ReturnType<typeof getAccountMetrics>>;
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
+
+  // Poll live account metrics from MetaApi (New York, cloud-g2) every 15s.
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      const r = await metricsFn({ data: {} }).catch(() => null);
+      if (!cancelled && r) setMetrics(r);
+    };
+    tick();
+    const id = setInterval(tick, 15_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [metricsFn]);
 
   useEffect(() => {
     try {
