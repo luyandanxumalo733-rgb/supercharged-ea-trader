@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import robotLogo from "@/assets/robot-logo.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Server, Wifi, WifiOff, Rocket } from "lucide-react";
+import meditatingRobot from "@/assets/meditating-robot-rain.png";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Wifi, WifiOff } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
 import { BottomNav } from "@/components/BottomNav";
@@ -91,14 +92,12 @@ const MENU_ITEMS: Array<{
   icon: typeof LayoutDashboard;
   label: string;
   color: string;
-  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/bridge" | "/setup" | "/history";
+  to?: "/" | "/analyzer" | "/broker" | "/symbols" | "/mentor" | "/history";
 }> = [
   { icon: LayoutDashboard, label: "Dashboard",         color: "oklch(0.65 0.22 255)", to: "/" },
   { icon: Coins,           label: "Symbols",           color: "oklch(0.78 0.16 85)",  to: "/symbols" },
   { icon: ScanLine,        label: "Chart Analyzer",    color: "oklch(0.72 0.20 150)", to: "/analyzer" },
   { icon: Link2,           label: "Broker Connection", color: "oklch(0.78 0.18 60)",  to: "/broker" },
-  { icon: Server,          label: "MT5 Bridge",        color: "oklch(0.70 0.20 200)", to: "/bridge" },
-  { icon: Rocket,          label: "Setup Wizard",      color: "oklch(0.72 0.22 230)", to: "/setup" },
   { icon: History,         label: "Trade History",     color: "oklch(0.65 0.22 200)", to: "/history" },
   { icon: KeyRound,        label: "Mentor Keys",       color: "oklch(0.70 0.22 290)", to: "/mentor" },
   { icon: Activity,        label: "Live Scanner",      color: "oklch(0.70 0.20 30)"  },
@@ -219,12 +218,20 @@ function RobotHero({ running }: { running: boolean }) {
 
       <div className="relative flex flex-col items-center px-4 pt-5 pb-6">
         {/* Robot image as backdrop in hero */}
-        <div className="relative">
+        <div
+          className="relative grid h-44 w-44 place-items-center overflow-hidden rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--brand) 55%, transparent), oklch(0.14 0.06 260) 70%)",
+            boxShadow: "0 0 40px -4px var(--brand), inset 0 0 24px oklch(1 0 0 / 0.10)",
+            border: "1px solid color-mix(in oklab, var(--brand) 60%, transparent)",
+          }}
+        >
           <img
             src={robotLogo}
             alt="SuperCharged EA V1.0 robot mascot"
-            className="h-44 w-44 object-contain drop-shadow-[0_0_30px_var(--brand)]"
-            style={{ animation: running ? "float 3.5s ease-in-out infinite" : "none" }}
+            className="h-40 w-40 rounded-full object-cover drop-shadow-[0_0_30px_var(--brand)]"
+            style={{ animation: running ? "spin 6s linear infinite" : "none" }}
           />
           <span
             className="absolute left-1/2 top-[45%] h-3 w-3 -translate-x-1/2 rounded-full"
@@ -288,6 +295,15 @@ function Index() {
       if (t) setThemeIdState(t);
     } catch { /* ignore */ }
   }, [menuOpen]);
+
+  // Auto-start the moment a broker is linked (real or demo). The bot then
+  // trades for itself on the 60s interval below.
+  useEffect(() => {
+    if (brokerConnected && !running) {
+      void handleStart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brokerConnected]);
 
   const setThemeId = (id: string) => {
     setThemeIdState(id);
@@ -414,11 +430,11 @@ function Index() {
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
-          backgroundImage: `url(${robotLogo})`,
+          backgroundImage: `url(${meditatingRobot})`,
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center 55%",
-          backgroundSize: "min(85vw, 520px)",
-          opacity: 0.07,
+          backgroundSize: "min(80vw, 480px)",
+          opacity: 0.12,
           filter: "drop-shadow(0 0 40px var(--brand))",
         }}
       />
@@ -512,35 +528,42 @@ function Index() {
                 <span className="text-lg font-semibold">{running ? "Running" : "Stopped"}</span>
               </div>
             </div>
-            <Link to="/symbols" className="text-right">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Symbols</div>
-              <div className="mt-1 text-sm font-semibold underline-offset-2 hover:underline">Manage →</div>
-            </Link>
+            <div className="text-right">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Mode</div>
+              <div className="mt-1 text-sm font-semibold">{brokerConnected ? "Auto-Trade" : "Not linked"}</div>
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => {
-                if (running) { setRunning(false); setExec(null); }
-                else { void handleStart(); }
-              }}
-              className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
-              style={{
-                background: running
-                  ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
-                  : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
-                boxShadow: running
-                  ? "0 0 24px -4px var(--danger)"
-                  : "0 0 24px -4px var(--brand)",
-              }}
-            >
-              {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
-            </button>
+          <button
+            onClick={() => {
+              if (running) { setRunning(false); setExec(null); }
+              else { void handleStart(); }
+            }}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
+            style={{
+              background: running
+                ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
+                : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+              boxShadow: running
+                ? "0 0 24px -4px var(--danger)"
+                : "0 0 24px -4px var(--brand)",
+            }}
+          >
+            {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
+          </button>
+
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <Link
               to="/symbols"
               className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
               <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} /> Symbols
+            </Link>
+            <Link
+              to="/broker"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
+            >
+              <Link2 className="h-4 w-4" style={{ color: "oklch(0.78 0.18 60)" }} /> Broker
             </Link>
           </div>
 
@@ -566,20 +589,6 @@ function Index() {
           <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
         </Link>
 
-        <Link
-          to="/broker"
-          className={`mt-3 flex items-center gap-3 rounded-2xl border p-3 transition hover:brightness-110 ${brokerConnected ? "border-white/10 bg-[var(--surface)]" : "border-[oklch(0.55_0.18_85_/_0.4)]"}`}
-          style={!brokerConnected ? { background: "linear-gradient(135deg, oklch(0.35 0.16 80 / 0.5), oklch(0.22 0.08 260))" } : undefined}
-        >
-          <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "linear-gradient(135deg, oklch(0.78 0.18 60), oklch(0.40 0.15 260))", boxShadow: "0 0 14px -3px oklch(0.78 0.18 60)" }}>
-            <Link2 className="h-4 w-4 text-white" />
-          </span>
-          <div className="flex-1">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{brokerConnected ? "Connected" : "Recommended"}</div>
-            <div className="text-sm font-semibold">Broker Connection — MT5 account</div>
-          </div>
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Open →</span>
-        </Link>
       </div>
       <BottomNav />
     </div>
