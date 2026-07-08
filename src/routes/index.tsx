@@ -296,6 +296,15 @@ function Index() {
     } catch { /* ignore */ }
   }, [menuOpen]);
 
+  // Auto-start the moment a broker is linked (real or demo). The bot then
+  // trades for itself on the 60s interval below.
+  useEffect(() => {
+    if (brokerConnected && !running) {
+      void handleStart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brokerConnected]);
+
   const setThemeId = (id: string) => {
     setThemeIdState(id);
     try { localStorage.setItem("sc_theme", id); } catch { /* ignore */ }
@@ -421,11 +430,11 @@ function Index() {
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
-          backgroundImage: `url(${robotLogo})`,
+          backgroundImage: `url(${meditatingRobot})`,
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center 55%",
-          backgroundSize: "min(85vw, 520px)",
-          opacity: 0.07,
+          backgroundSize: "min(80vw, 480px)",
+          opacity: 0.12,
           filter: "drop-shadow(0 0 40px var(--brand))",
         }}
       />
