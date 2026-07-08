@@ -218,12 +218,20 @@ function RobotHero({ running }: { running: boolean }) {
 
       <div className="relative flex flex-col items-center px-4 pt-5 pb-6">
         {/* Robot image as backdrop in hero */}
-        <div className="relative">
+        <div
+          className="relative grid h-44 w-44 place-items-center overflow-hidden rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--brand) 55%, transparent), oklch(0.14 0.06 260) 70%)",
+            boxShadow: "0 0 40px -4px var(--brand), inset 0 0 24px oklch(1 0 0 / 0.10)",
+            border: "1px solid color-mix(in oklab, var(--brand) 60%, transparent)",
+          }}
+        >
           <img
             src={robotLogo}
             alt="SuperCharged EA V1.0 robot mascot"
-            className="h-44 w-44 object-contain drop-shadow-[0_0_30px_var(--brand)]"
-            style={{ animation: running ? "float 3.5s ease-in-out infinite" : "none" }}
+            className="h-40 w-40 rounded-full object-cover drop-shadow-[0_0_30px_var(--brand)]"
+            style={{ animation: running ? "spin 6s linear infinite" : "none" }}
           />
           <span
             className="absolute left-1/2 top-[45%] h-3 w-3 -translate-x-1/2 rounded-full"
