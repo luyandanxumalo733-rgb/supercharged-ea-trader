@@ -526,6 +526,14 @@ function Index() {
               </span>
             </div>
           </div>
+          <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+            <span className="uppercase tracking-widest">
+              {metrics?.ok ? "Live · reachable" : metrics ? "Unreachable" : "Connecting…"}
+            </span>
+            <span>
+              {lastRefresh ? `Refreshed ${new Date(lastRefresh).toLocaleTimeString()}` : "—"}
+            </span>
+          </div>
 
           {metrics?.ok ? (
             <>
