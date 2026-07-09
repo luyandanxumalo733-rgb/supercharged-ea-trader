@@ -232,20 +232,6 @@ function RobotHero({ running }: { running: boolean }) {
         <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">V 1.0</div>
 
         <div
-          className="mt-3 flex items-center justify-center gap-2 rounded-full border px-4 py-1.5"
-          style={{
-            borderColor: "oklch(0.62 0.22 255 / 0.55)",
-            background: "linear-gradient(135deg, oklch(0.30 0.18 255 / 0.55), oklch(0.20 0.12 260 / 0.4))",
-            boxShadow: "0 0 22px -4px oklch(0.62 0.22 255 / 0.9)",
-          }}
-        >
-          <Zap className="h-3.5 w-3.5" style={{ color: "oklch(0.85 0.20 230)" }} />
-          <span className="text-[12px] font-extrabold uppercase tracking-[0.32em] text-[oklch(0.85_0.20_230)] drop-shadow-[0_0_8px_oklch(0.62_0.22_255)]">
-            Powered by Algo Trading
-          </span>
-        </div>
-
-        <div
           className="mt-3 flex items-center gap-2 rounded-full border px-3 py-1"
           style={{
             borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
