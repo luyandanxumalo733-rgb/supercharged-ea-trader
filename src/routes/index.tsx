@@ -291,13 +291,17 @@ function Index() {
   const metricsFn = useServerFn(getAccountMetrics);
   type Metrics = Awaited<ReturnType<typeof getAccountMetrics>>;
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<number | null>(null);
 
   // Poll live account metrics from MetaApi (New York, cloud-g2) every 15s.
   useEffect(() => {
     let cancelled = false;
     const tick = async () => {
       const r = await metricsFn({ data: {} }).catch(() => null);
-      if (!cancelled && r) setMetrics(r);
+      if (!cancelled && r) {
+        setMetrics(r);
+        setLastRefresh(Date.now());
+      }
     };
     tick();
     const id = setInterval(tick, 15_000);
