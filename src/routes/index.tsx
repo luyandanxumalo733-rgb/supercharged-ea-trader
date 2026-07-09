@@ -35,8 +35,25 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
 
 function Logo() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative h-14 w-14">
+    <div className="flex w-full flex-col items-center gap-2">
+      <div
+        className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1"
+        style={{
+          borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
+          background: "color-mix(in oklab, var(--brand) 22%, transparent)",
+          boxShadow: "0 0 14px -2px var(--brand)",
+        }}
+      >
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: "var(--brand-glow, var(--brand))", boxShadow: "0 0 6px var(--brand)", animation: "pulse 1.4s ease-in-out infinite" }}
+        />
+        <span className="text-[10px] font-extrabold uppercase tracking-[0.28em]" style={{ color: "var(--brand)" }}>
+          Powered by Algo Trading
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+      <div className="relative h-12 w-12">
         {/* rotating LED ring around the circular robot */}
         <span
           aria-hidden
@@ -49,7 +66,7 @@ function Logo() {
           }}
         />
         <div
-          className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-full"
+          className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-full"
           style={{
             background:
               "radial-gradient(circle at 50% 40%, var(--brand) , oklch(0.18 0.08 260) 70%)",
@@ -62,28 +79,11 @@ function Logo() {
             alt="SuperCharged robot mascot"
             width={48}
             height={48}
-            className="relative h-11 w-11 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand-glow)]"
+            className="relative h-10 w-10 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand)]"
           />
         </div>
       </div>
-      <div className="leading-tight">
-        <div
-          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5"
-          style={{
-            borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
-            background: "color-mix(in oklab, var(--brand) 20%, transparent)",
-            boxShadow: "0 0 10px -2px var(--brand)",
-          }}
-        >
-          <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: "var(--brand-glow)", boxShadow: "0 0 6px var(--brand-glow)", animation: "pulse 1.4s ease-in-out infinite" }}
-          />
-          <span className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-foreground/90">
-            Powered by Algo Trading
-          </span>
-        </div>
-        <div className="mt-1 text-base font-bold text-foreground">SuperCharged</div>
+      <div className="text-lg font-black uppercase tracking-wider text-foreground">SuperCharged</div>
       </div>
     </div>
   );
