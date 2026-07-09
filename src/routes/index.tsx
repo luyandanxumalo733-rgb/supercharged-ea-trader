@@ -445,50 +445,50 @@ function Index() {
         background: `radial-gradient(80% 50% at 50% 0%, ${theme.brand.replace(")", " / 0.35)")} , transparent), ${theme.bg}`,
       }}
     >
-      {/* Robot logo as faint full-page background */}
+      {/* Full-visible meditating robot + raining dollars — animates when running */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           backgroundImage: `url(${meditatingRobot})`,
           backgroundRepeat: "no-repeat",
-          backgroundPosition: "center 55%",
-          backgroundSize: "min(80vw, 480px)",
-          opacity: 0.12,
-          filter: "drop-shadow(0 0 40px var(--brand))",
+          backgroundPosition: "center center",
+          backgroundSize: "cover",
+          animation: running ? "bgPulse 6s ease-in-out infinite" : "none",
+          transformOrigin: "center",
         }}
       />
-      {/* Rotating LED ring surrounding the background robot */}
+      {/* Themed color wash — reacts to the selected background theme */}
       <div
         aria-hidden
-        className="pointer-events-none fixed left-1/2 top-[55%] z-0 -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          width: "min(92vw, 560px)",
-          height: "min(92vw, 560px)",
+          background: `radial-gradient(80% 60% at 50% 40%, color-mix(in oklab, var(--brand) 55%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in oklab, var(--app-bg) 55%, transparent) 0%, color-mix(in oklab, var(--app-bg) 80%, transparent) 100%)`,
+          mixBlendMode: "multiply",
         }}
-      >
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 80deg, transparent 160deg, var(--brand-glow) 240deg, transparent 320deg, var(--brand) 360deg)`,
-            mask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
-            WebkitMask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
-            animation: "spin 14s linear infinite",
-            opacity: 0.55,
-            filter: "drop-shadow(0 0 12px var(--brand))",
-          }}
-        />
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `conic-gradient(from 180deg, transparent 0deg, var(--brand-glow) 60deg, transparent 140deg, var(--brand) 220deg, transparent 300deg)`,
-            mask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
-            WebkitMask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
-            animation: "spin 22s linear infinite reverse",
-            opacity: 0.4,
-          }}
-        />
-      </div>
+      />
+      {/* Falling dollar signs (only when running) */}
+      {running && (
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute font-black"
+              style={{
+                left: `${(i * 7 + 3) % 100}%`,
+                top: "-8%",
+                fontSize: `${12 + (i % 5) * 4}px`,
+                color: "var(--brand-glow, var(--brand))",
+                textShadow: "0 0 10px var(--brand)",
+                animation: `rainDrop ${4 + (i % 6)}s linear ${i * 0.35}s infinite`,
+                opacity: 0.75,
+              }}
+            >
+              $
+            </span>
+          ))}
+        </div>
+      )}
       <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
         <header className="relative flex items-center justify-center">
           <Logo />
