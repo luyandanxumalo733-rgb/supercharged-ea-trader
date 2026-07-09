@@ -789,6 +789,21 @@ function Index() {
           )}
         </section>
 
+        <QuickSetup />
+
+        <div
+          className="mt-4 flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em]"
+          style={{
+            background: "color-mix(in oklab, var(--brand) 18%, transparent)",
+            borderColor: "color-mix(in oklab, var(--brand) 45%, transparent)",
+            color: "var(--brand-glow, var(--brand))",
+            boxShadow: "0 0 24px -8px var(--brand)",
+          }}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          <span>Powered by Algo Trading</span>
+        </div>
+
         <Link
           to="/mentor"
           className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-[var(--surface)] p-3 transition hover:bg-white/10"
