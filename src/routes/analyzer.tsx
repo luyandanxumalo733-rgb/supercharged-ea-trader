@@ -122,23 +122,9 @@ function Analyzer() {
         </div>
 
         <section className="mt-5 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Pair</span>
-              <select value={pair} onChange={(e) => setPair(e.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm">
-                {PAIR_GROUPS.map((g) => (
-                  <optgroup key={g.label} label={g.label}>
-                    {g.items.map((p) => <option key={p} value={p}>{p}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Timeframe</span>
-              <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm">
-                {TFS.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </label>
+          <div className="flex items-center gap-2 rounded-lg border border-[oklch(0.55_0.22_230_/_0.4)] bg-[oklch(0.22_0.10_260_/_0.4)] px-3 py-2 text-[10px] uppercase tracking-widest text-[oklch(0.85_0.20_230)]">
+            <ScanLine className="h-3.5 w-3.5" />
+            <span>Auto-detects pair & timeframe from the screenshot</span>
           </div>
 
           <div
