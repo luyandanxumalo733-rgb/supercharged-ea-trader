@@ -35,8 +35,25 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
 
 function Logo() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative h-14 w-14">
+    <div className="flex w-full flex-col items-center gap-2">
+      <div
+        className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1"
+        style={{
+          borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
+          background: "color-mix(in oklab, var(--brand) 22%, transparent)",
+          boxShadow: "0 0 14px -2px var(--brand)",
+        }}
+      >
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: "var(--brand-glow, var(--brand))", boxShadow: "0 0 6px var(--brand)", animation: "pulse 1.4s ease-in-out infinite" }}
+        />
+        <span className="text-[10px] font-extrabold uppercase tracking-[0.28em]" style={{ color: "var(--brand)" }}>
+          Powered by Algo Trading
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+      <div className="relative h-12 w-12">
         {/* rotating LED ring around the circular robot */}
         <span
           aria-hidden
@@ -49,7 +66,7 @@ function Logo() {
           }}
         />
         <div
-          className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-full"
+          className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-full"
           style={{
             background:
               "radial-gradient(circle at 50% 40%, var(--brand) , oklch(0.18 0.08 260) 70%)",
@@ -62,28 +79,11 @@ function Logo() {
             alt="SuperCharged robot mascot"
             width={48}
             height={48}
-            className="relative h-11 w-11 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand-glow)]"
+            className="relative h-10 w-10 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand)]"
           />
         </div>
       </div>
-      <div className="leading-tight">
-        <div
-          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5"
-          style={{
-            borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
-            background: "color-mix(in oklab, var(--brand) 20%, transparent)",
-            boxShadow: "0 0 10px -2px var(--brand)",
-          }}
-        >
-          <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: "var(--brand-glow)", boxShadow: "0 0 6px var(--brand-glow)", animation: "pulse 1.4s ease-in-out infinite" }}
-          />
-          <span className="text-[9px] font-extrabold uppercase tracking-[0.22em] text-foreground/90">
-            Powered by Algo Trading
-          </span>
-        </div>
-        <div className="mt-1 text-base font-bold text-foreground">SuperCharged</div>
+      <div className="text-lg font-black uppercase tracking-wider text-foreground">SuperCharged</div>
       </div>
     </div>
   );
@@ -291,13 +291,17 @@ function Index() {
   const metricsFn = useServerFn(getAccountMetrics);
   type Metrics = Awaited<ReturnType<typeof getAccountMetrics>>;
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<number | null>(null);
 
   // Poll live account metrics from MetaApi (New York, cloud-g2) every 15s.
   useEffect(() => {
     let cancelled = false;
     const tick = async () => {
       const r = await metricsFn({ data: {} }).catch(() => null);
-      if (!cancelled && r) setMetrics(r);
+      if (!cancelled && r) {
+        setMetrics(r);
+        setLastRefresh(Date.now());
+      }
     };
     tick();
     const id = setInterval(tick, 15_000);
@@ -486,12 +490,12 @@ function Index() {
         />
       </div>
       <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
-        <header className="flex items-center justify-between">
+        <header className="relative flex items-center justify-center">
           <Logo />
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
-            className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-foreground transition hover:bg-white/10"
+            className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-foreground transition hover:bg-white/10"
             style={{ boxShadow: "0 0 16px -6px var(--brand)" }}
           >
             <Menu className="h-5 w-5" />
@@ -521,6 +525,14 @@ function Index() {
                 {metrics ? (metrics.ok ? `${metrics.region} · cloud-g2` : "offline") : "…"}
               </span>
             </div>
+          </div>
+          <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+            <span className="uppercase tracking-widest">
+              {metrics?.ok ? "Live · reachable" : metrics ? "Unreachable" : "Connecting…"}
+            </span>
+            <span>
+              {lastRefresh ? `Refreshed ${new Date(lastRefresh).toLocaleTimeString()}` : "—"}
+            </span>
           </div>
 
           {metrics?.ok ? (
@@ -618,36 +630,38 @@ function Index() {
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              if (running) { setRunning(false); setExec(null); }
-              else { void handleStart(); }
-            }}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
-            style={{
-              background: running
-                ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
-                : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
-              boxShadow: running
-                ? "0 0 24px -4px var(--danger)"
-                : "0 0 24px -4px var(--brand)",
-            }}
-          >
-            {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
-          </button>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <button
+              onClick={() => {
+                if (running) { setRunning(false); setExec(null); }
+                else { void handleStart(); }
+              }}
+              className="flex flex-col items-center justify-center gap-1 rounded-xl py-3 text-[11px] font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
+              style={{
+                background: running
+                  ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
+                  : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+                boxShadow: running
+                  ? "0 0 24px -4px var(--danger)"
+                  : "0 0 24px -4px var(--brand)",
+              }}
+            >
+              {running ? <Square className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
+              <span>{running ? "Stop" : "Start"}</span>
+            </button>
             <Link
               to="/symbols"
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
-              <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} /> Symbols
+              <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} />
+              <span>Symbols</span>
             </Link>
             <Link
               to="/broker"
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
-              <Link2 className="h-4 w-4" style={{ color: "oklch(0.78 0.18 60)" }} /> Broker
+              <Link2 className="h-4 w-4" style={{ color: "oklch(0.78 0.18 60)" }} />
+              <span>Broker</span>
             </Link>
           </div>
 
