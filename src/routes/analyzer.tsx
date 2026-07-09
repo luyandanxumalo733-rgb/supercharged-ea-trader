@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { ArrowLeft, Upload, Loader2, TrendingUp, TrendingDown, MinusCircle, ScanLine, Target, ShieldCheck, Trophy } from "lucide-react";
 import { analyzeChart } from "@/lib/analyze-chart.functions";
+import { executeTrade } from "@/lib/execute-trade.functions";
 import robotLogo from "@/assets/robot-logo.png";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -16,27 +18,15 @@ export const Route = createFileRoute("/analyzer")({
   component: Analyzer,
 });
 
-const PAIR_GROUPS: Array<{ label: string; items: string[] }> = [
-  { label: "Forex Majors", items: ["EURUSD","GBPUSD","USDJPY","USDCHF","AUDUSD","USDCAD","NZDUSD"] },
-  { label: "Forex Minors / Crosses", items: ["EURJPY","EURGBP","EURAUD","EURCHF","EURCAD","EURNZD","GBPJPY","GBPAUD","GBPCAD","GBPCHF","GBPNZD","AUDJPY","AUDNZD","AUDCAD","AUDCHF","NZDJPY","CADJPY","CHFJPY","CADCHF"] },
-  { label: "Forex Exotics", items: ["USDTRY","USDZAR","USDMXN","USDSGD","USDHKD","USDNOK","USDSEK","USDDKK","USDPLN","USDCZK","USDHUF","USDCNH","USDINR","USDTHB"] },
-  { label: "Metals & Commodities", items: ["XAUUSD","XAGUSD","XPTUSD","XPDUSD","WTI","BRENT","USOIL","UKOIL","NATGAS","COPPER"] },
-  { label: "Indexes", items: ["US30","US100","US500","US2000","GER40","UK100","FRA40","EU50","JP225","AUS200","HK50","CHINA50","SPA35","NETH25","SUI20","SA40"] },
-  { label: "Crypto", items: ["BTCUSD","ETHUSD","XRPUSD","LTCUSD","BCHUSD","ADAUSD","SOLUSD","DOGEUSD","DOTUSD","LINKUSD","MATICUSD","AVAXUSD","BNBUSD","TRXUSD"] },
-  { label: "US Stocks", items: ["AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","NFLX","AMD","INTC","BABA","JPM","V","MA","DIS","BA","KO","PEP","XOM","CVX","PFE","WMT","NKE"] },
-  { label: "ETFs", items: ["SPY","QQQ","DIA","IWM","GLD","SLV","USO","TLT","EEM","XLF","XLE","XLK"] },
-];
-const TFS = ["M1","M5","M15","M30","H1","H4","D1","W1","MN"];
-
 type Result = Awaited<ReturnType<typeof analyzeChart>>;
 
 function Analyzer() {
   const analyze = useServerFn(analyzeChart);
+  const fire = useServerFn(executeTrade);
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [pair, setPair] = useState("EURUSD");
-  const [timeframe, setTimeframe] = useState("H1");
   const [loading, setLoading] = useState(false);
+  const [trading, setTrading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
 
@@ -57,12 +47,27 @@ function Analyzer() {
     setLoading(true);
     setError(null);
     try {
-      const r = await analyze({ data: { imageDataUrl: preview, pair, timeframe } });
+      const r = await analyze({ data: { imageDataUrl: preview } });
       setResult(r);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to analyze chart");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function autoTrade() {
+    if (!result?.pair) return;
+    setTrading(true);
+    try {
+      const side = result.signal === "SELL" ? "SELL" : "BUY";
+      const r = await fire({ data: { symbol: result.pair, side, lot: 0.01, tpPips: 30, slPips: 20 } });
+      if (r.ok) toast.success(`Auto-Trade sent: ${side} ${result.pair}`);
+      else toast.error("Auto-Trade failed", { description: String(r.body).slice(0, 140) });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Auto-Trade failed");
+    } finally {
+      setTrading(false);
     }
   }
 
