@@ -250,6 +250,147 @@ function RobotHero({ running }: { running: boolean }) {
 type Saved = { broker: string; server: string; login: string; name: string; bridgeUrl?: string };
 type SymCfg = { enabled: boolean; lot: string; tp: string; sl: string };
 
+const ALL_INSTRUMENTS: string[] = [
+  // Forex majors
+  "EURUSD","GBPUSD","USDJPY","USDCHF","AUDUSD","USDCAD","NZDUSD",
+  // Crosses
+  "EURJPY","EURGBP","EURAUD","EURCHF","EURCAD","EURNZD","GBPJPY","GBPAUD","GBPCAD","GBPCHF","GBPNZD","AUDJPY","AUDNZD","AUDCAD","AUDCHF","NZDJPY","CADJPY","CHFJPY","CADCHF",
+  // Exotics
+  "USDTRY","USDZAR","USDMXN","USDSGD","USDHKD","USDNOK","USDSEK","USDDKK","USDPLN","USDCZK","USDHUF","USDCNH","USDINR","USDTHB",
+  // Metals & commodities
+  "XAUUSD","XAGUSD","XPTUSD","XPDUSD","WTI","BRENT","USOIL","UKOIL","NATGAS","COPPER",
+  // Indexes
+  "US30","US100","US500","US2000","GER40","UK100","FRA40","EU50","JP225","AUS200","HK50","CHINA50","SPA35","NETH25","SUI20","SA40",
+  // Crypto
+  "BTCUSD","ETHUSD","XRPUSD","LTCUSD","BCHUSD","ADAUSD","SOLUSD","DOGEUSD","DOTUSD","LINKUSD","MATICUSD","AVAXUSD","BNBUSD","TRXUSD",
+  // US Stocks
+  "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","NFLX","AMD","INTC","BABA","JPM","V","MA","DIS","BA","KO","PEP","XOM","CVX","PFE","WMT","NKE",
+  // ETFs
+  "SPY","QQQ","DIA","IWM","GLD","SLV","USO","TLT","EEM","XLF","XLE","XLK",
+];
+
+function QuickSetup() {
+  const [query, setQuery] = useState("");
+  const [lot, setLot] = useState("0.01");
+  const [maxPos, setMaxPos] = useState("3");
+  const [cfg, setCfg] = useState<Record<string, SymCfg>>({});
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem("sc_symbols");
+      if (s) setCfg(JSON.parse(s));
+      const m = localStorage.getItem("sc_max_positions");
+      if (m) setMaxPos(m);
+      const l = localStorage.getItem("sc_default_lot");
+      if (l) setLot(l);
+    } catch { /* */ }
+  }, []);
+
+  function persist(next: Record<string, SymCfg>) {
+    setCfg(next);
+    try { localStorage.setItem("sc_symbols", JSON.stringify(next)); } catch { /* */ }
+  }
+  function toggle(sym: string) {
+    const cur = cfg[sym] ?? { enabled: false, lot, tp: "30", sl: "20" };
+    persist({ ...cfg, [sym]: { ...cur, lot, enabled: !cur.enabled } });
+  }
+  function saveLot(v: string) {
+    setLot(v);
+    try { localStorage.setItem("sc_default_lot", v); } catch { /* */ }
+    const next: Record<string, SymCfg> = { ...cfg };
+    for (const k of Object.keys(next)) if (next[k].enabled) next[k] = { ...next[k], lot: v };
+    persist(next);
+  }
+  function saveMax(v: string) {
+    setMaxPos(v);
+    try { localStorage.setItem("sc_max_positions", v); } catch { /* */ }
+  }
+
+  const q = query.trim().toUpperCase();
+  const results = q ? ALL_INSTRUMENTS.filter((s) => s.includes(q)).slice(0, 20) : [];
+  const enabledCount = Object.values(cfg).filter((c) => c?.enabled).length;
+
+  return (
+    <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Trading Instruments</div>
+          <div className="mt-0.5 text-sm font-semibold">Search & configure the bot</div>
+        </div>
+        <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+          {enabledCount} on
+        </span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
+        <Search className="h-4 w-4 text-muted-foreground" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search any pair, index, stock, crypto…"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+
+      {q && (
+        <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-1">
+          {results.length ? results.map((s) => {
+            const on = !!cfg[s]?.enabled;
+            return (
+              <button
+                key={s}
+                onClick={() => toggle(s)}
+                className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm hover:bg-white/5"
+              >
+                <span className="font-mono">{s}</span>
+                <span
+                  className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
+                  style={{
+                    borderColor: on ? "color-mix(in oklab, var(--brand) 55%, transparent)" : "color-mix(in oklab, white 10%, transparent)",
+                    background: on ? "color-mix(in oklab, var(--brand) 25%, transparent)" : "transparent",
+                    color: on ? "var(--brand-glow, var(--brand))" : "var(--muted-foreground, #999)",
+                  }}
+                >
+                  {on ? "On" : "Add"}
+                </span>
+              </button>
+            );
+          }) : (
+            <div className="px-2 py-3 text-center text-xs text-muted-foreground">No matches</div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Lot size</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={lot}
+            onChange={(e) => saveLot(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm font-mono"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Max positions</span>
+          <input
+            type="number"
+            min="0"
+            value={maxPos}
+            onChange={(e) => saveMax(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm font-mono"
+          />
+        </label>
+      </div>
+      <div className="mt-1.5 text-[10px] text-muted-foreground">
+        0 = unlimited. Bot opens up to this many positions per cycle.
+      </div>
+    </section>
+  );
+}
+
 function Index() {
   const [running, setRunning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
