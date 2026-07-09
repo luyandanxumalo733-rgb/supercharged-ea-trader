@@ -184,7 +184,10 @@ function Analyzer() {
           <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Signal</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Signal {result.pair && <span className="text-foreground">· {result.pair}</span>}
+                  {result.timeframe && <span> · {result.timeframe}</span>}
+                </div>
                 <div className="mt-1 flex items-center gap-2">
                   <SignalIcon className="h-5 w-5" style={{ color: signalColor }} />
                   <span className="text-2xl font-bold" style={{ color: signalColor }}>{result.signal}</span>
@@ -214,6 +217,17 @@ function Analyzer() {
             {result.reasoning && (
               <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{result.reasoning}</p>
             )}
+            <button
+              onClick={autoTrade}
+              disabled={trading || !result.pair}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98] disabled:opacity-40"
+              style={{
+                background: "linear-gradient(135deg, var(--brand, oklch(0.62 0.22 255)), oklch(0.40 0.15 260))",
+                boxShadow: "0 0 24px -4px var(--brand, oklch(0.62 0.22 255))",
+              }}
+            >
+              {trading ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending</> : <>⚡ Auto-Trade {result.signal} {result.pair || ""}</>}
+            </button>
           </section>
         )}
       </div>
