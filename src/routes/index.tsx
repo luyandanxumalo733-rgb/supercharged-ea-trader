@@ -630,36 +630,38 @@ function Index() {
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              if (running) { setRunning(false); setExec(null); }
-              else { void handleStart(); }
-            }}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
-            style={{
-              background: running
-                ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
-                : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
-              boxShadow: running
-                ? "0 0 24px -4px var(--danger)"
-                : "0 0 24px -4px var(--brand)",
-            }}
-          >
-            {running ? (<><Square className="h-4 w-4" fill="currentColor" /> Stop</>) : (<><Play className="h-4 w-4" fill="currentColor" /> Start</>)}
-          </button>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <button
+              onClick={() => {
+                if (running) { setRunning(false); setExec(null); }
+                else { void handleStart(); }
+              }}
+              className="flex flex-col items-center justify-center gap-1 rounded-xl py-3 text-[11px] font-semibold uppercase tracking-widest text-white transition-all active:scale-[0.98]"
+              style={{
+                background: running
+                  ? "linear-gradient(135deg, var(--danger), oklch(0.35 0.15 25))"
+                  : "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+                boxShadow: running
+                  ? "0 0 24px -4px var(--danger)"
+                  : "0 0 24px -4px var(--brand)",
+              }}
+            >
+              {running ? <Square className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
+              <span>{running ? "Stop" : "Start"}</span>
+            </button>
             <Link
               to="/symbols"
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
-              <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} /> Symbols
+              <Coins className="h-4 w-4" style={{ color: "oklch(0.85 0.16 85)" }} />
+              <span>Symbols</span>
             </Link>
             <Link
               to="/broker"
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-3 text-[11px] font-semibold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] hover:bg-white/10"
             >
-              <Link2 className="h-4 w-4" style={{ color: "oklch(0.78 0.18 60)" }} /> Broker
+              <Link2 className="h-4 w-4" style={{ color: "oklch(0.78 0.18 60)" }} />
+              <span>Broker</span>
             </Link>
           </div>
 
