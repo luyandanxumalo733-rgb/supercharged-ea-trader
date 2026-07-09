@@ -53,35 +53,21 @@ function Logo() {
         </span>
       </div>
       <div className="flex items-center gap-3">
-      <div className="relative h-12 w-12">
-        {/* rotating LED ring around the circular robot */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -inset-1 rounded-full"
-          style={{
-            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 70deg, transparent 140deg, var(--brand-glow) 220deg, transparent 290deg, var(--brand) 360deg)`,
-            mask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
-            WebkitMask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
-            animation: "spin 6s linear infinite",
-          }}
+      <div
+        className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-lg"
+        style={{
+          background: "linear-gradient(140deg, var(--brand), oklch(0.18 0.08 260))",
+          boxShadow: "0 0 18px -3px var(--brand)",
+          border: "1px solid color-mix(in oklab, var(--brand) 60%, transparent)",
+        }}
+      >
+        <img
+          src={robotLogo}
+          alt="SuperCharged robot mascot"
+          width={40}
+          height={40}
+          className="h-10 w-10 object-cover"
         />
-        <div
-          className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 40%, var(--brand) , oklch(0.18 0.08 260) 70%)",
-            boxShadow:
-              "0 0 22px -2px var(--brand), inset 0 0 12px oklch(1 0 0 / 0.15)",
-          }}
-        >
-          <img
-            src={robotLogo}
-            alt="SuperCharged robot mascot"
-            width={48}
-            height={48}
-            className="relative h-10 w-10 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand)]"
-          />
-        </div>
       </div>
       <div className="text-lg font-black uppercase tracking-wider text-foreground">SuperCharged</div>
       </div>
