@@ -490,12 +490,12 @@ function Index() {
         />
       </div>
       <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
-        <header className="flex items-center justify-between">
+        <header className="relative flex items-center justify-center">
           <Logo />
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
-            className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-foreground transition hover:bg-white/10"
+            className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-foreground transition hover:bg-white/10"
             style={{ boxShadow: "0 0 16px -6px var(--brand)" }}
           >
             <Menu className="h-5 w-5" />
