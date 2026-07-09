@@ -164,3 +164,16 @@
   50%  { opacity: 1; }
   100% { top: 100%; opacity: 0.2; }
 }
+@keyframes bgPulse {
+  0%, 100% { transform: scale(1) translateY(0); filter: brightness(0.9) saturate(1.1); }
+  50%      { transform: scale(1.06) translateY(-1%); filter: brightness(1.15) saturate(1.4); }
+}
+@keyframes rainDrop {
+  0%   { transform: translateY(-10%); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
+@keyframes rainDrift {
+  0%   { background-position: 0 -200px; }
+  100% { background-position: 0 1200px; }
+}

@@ -3,8 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import robotLogo from "@/assets/robot-logo.png";
-import meditatingRobot from "@/assets/meditating-robot-rain.png";
-import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Wifi, WifiOff } from "lucide-react";
+import meditatingRobot from "@/assets/meditating-robot-rain.jpg";
+import { Menu, X, LayoutDashboard, Activity, Settings, Bell, Shield, History, Wallet, HelpCircle, ScanLine, Link2, Palette, Coins, Zap, KeyRound, Play, Square, Wifi, WifiOff, Search } from "lucide-react";
 import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
 import { getAccountMetrics } from "@/lib/account.functions";
@@ -53,35 +53,21 @@ function Logo() {
         </span>
       </div>
       <div className="flex items-center gap-3">
-      <div className="relative h-12 w-12">
-        {/* rotating LED ring around the circular robot */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -inset-1 rounded-full"
-          style={{
-            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 70deg, transparent 140deg, var(--brand-glow) 220deg, transparent 290deg, var(--brand) 360deg)`,
-            mask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
-            WebkitMask: "radial-gradient(circle, transparent 62%, black 63%, black 100%)",
-            animation: "spin 6s linear infinite",
-          }}
+      <div
+        className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-lg"
+        style={{
+          background: "linear-gradient(140deg, var(--brand), oklch(0.18 0.08 260))",
+          boxShadow: "0 0 18px -3px var(--brand)",
+          border: "1px solid color-mix(in oklab, var(--brand) 60%, transparent)",
+        }}
+      >
+        <img
+          src={robotLogo}
+          alt="SuperCharged robot mascot"
+          width={40}
+          height={40}
+          className="h-10 w-10 object-cover"
         />
-        <div
-          className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 40%, var(--brand) , oklch(0.18 0.08 260) 70%)",
-            boxShadow:
-              "0 0 22px -2px var(--brand), inset 0 0 12px oklch(1 0 0 / 0.15)",
-          }}
-        >
-          <img
-            src={robotLogo}
-            alt="SuperCharged robot mascot"
-            width={48}
-            height={48}
-            className="relative h-10 w-10 rounded-full object-cover drop-shadow-[0_0_6px_var(--brand)]"
-          />
-        </div>
       </div>
       <div className="text-lg font-black uppercase tracking-wider text-foreground">SuperCharged</div>
       </div>
@@ -218,12 +204,12 @@ function RobotHero({ running }: { running: boolean }) {
       <div className="pointer-events-none absolute inset-x-6 bottom-3 h-[2px] rounded-full" style={{ background: "oklch(0.78 0.18 200)", boxShadow: "0 0 14px oklch(0.78 0.18 200)" }} />
 
       <div className="relative flex flex-col items-center px-4 pt-5 pb-6">
-        {/* Robot image as backdrop in hero */}
+        {/* Robot image — square-rounded, no longer circular */}
         <div
-          className="relative grid h-44 w-44 place-items-center overflow-hidden rounded-full"
+          className="relative grid h-44 w-44 place-items-center overflow-hidden rounded-2xl"
           style={{
             background:
-              "radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--brand) 55%, transparent), oklch(0.14 0.06 260) 70%)",
+              "linear-gradient(160deg, color-mix(in oklab, var(--brand) 55%, transparent), oklch(0.14 0.06 260))",
             boxShadow: "0 0 40px -4px var(--brand), inset 0 0 24px oklch(1 0 0 / 0.10)",
             border: "1px solid color-mix(in oklab, var(--brand) 60%, transparent)",
           }}
@@ -231,8 +217,8 @@ function RobotHero({ running }: { running: boolean }) {
           <img
             src={robotLogo}
             alt="SuperCharged EA V1.0 robot mascot"
-            className="h-40 w-40 rounded-full object-cover drop-shadow-[0_0_30px_var(--brand)]"
-            style={{ animation: running ? "spin 6s linear infinite" : "none" }}
+            className="h-40 w-40 object-cover drop-shadow-[0_0_30px_var(--brand)]"
+            style={{ animation: running ? "float 3s ease-in-out infinite" : "none" }}
           />
           <span
             className="absolute left-1/2 top-[45%] h-3 w-3 -translate-x-1/2 rounded-full"
@@ -244,20 +230,6 @@ function RobotHero({ running }: { running: boolean }) {
           SuperCharged EA
         </h2>
         <div className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">V 1.0</div>
-
-        <div
-          className="mt-3 flex items-center justify-center gap-2 rounded-full border px-4 py-1.5"
-          style={{
-            borderColor: "oklch(0.62 0.22 255 / 0.55)",
-            background: "linear-gradient(135deg, oklch(0.30 0.18 255 / 0.55), oklch(0.20 0.12 260 / 0.4))",
-            boxShadow: "0 0 22px -4px oklch(0.62 0.22 255 / 0.9)",
-          }}
-        >
-          <Zap className="h-3.5 w-3.5" style={{ color: "oklch(0.85 0.20 230)" }} />
-          <span className="text-[12px] font-extrabold uppercase tracking-[0.32em] text-[oklch(0.85_0.20_230)] drop-shadow-[0_0_8px_oklch(0.62_0.22_255)]">
-            Powered by Algo Trading
-          </span>
-        </div>
 
         <div
           className="mt-3 flex items-center gap-2 rounded-full border px-3 py-1"
@@ -277,6 +249,147 @@ function RobotHero({ running }: { running: boolean }) {
 
 type Saved = { broker: string; server: string; login: string; name: string; bridgeUrl?: string };
 type SymCfg = { enabled: boolean; lot: string; tp: string; sl: string };
+
+const ALL_INSTRUMENTS: string[] = [
+  // Forex majors
+  "EURUSD","GBPUSD","USDJPY","USDCHF","AUDUSD","USDCAD","NZDUSD",
+  // Crosses
+  "EURJPY","EURGBP","EURAUD","EURCHF","EURCAD","EURNZD","GBPJPY","GBPAUD","GBPCAD","GBPCHF","GBPNZD","AUDJPY","AUDNZD","AUDCAD","AUDCHF","NZDJPY","CADJPY","CHFJPY","CADCHF",
+  // Exotics
+  "USDTRY","USDZAR","USDMXN","USDSGD","USDHKD","USDNOK","USDSEK","USDDKK","USDPLN","USDCZK","USDHUF","USDCNH","USDINR","USDTHB",
+  // Metals & commodities
+  "XAUUSD","XAGUSD","XPTUSD","XPDUSD","WTI","BRENT","USOIL","UKOIL","NATGAS","COPPER",
+  // Indexes
+  "US30","US100","US500","US2000","GER40","UK100","FRA40","EU50","JP225","AUS200","HK50","CHINA50","SPA35","NETH25","SUI20","SA40",
+  // Crypto
+  "BTCUSD","ETHUSD","XRPUSD","LTCUSD","BCHUSD","ADAUSD","SOLUSD","DOGEUSD","DOTUSD","LINKUSD","MATICUSD","AVAXUSD","BNBUSD","TRXUSD",
+  // US Stocks
+  "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","NFLX","AMD","INTC","BABA","JPM","V","MA","DIS","BA","KO","PEP","XOM","CVX","PFE","WMT","NKE",
+  // ETFs
+  "SPY","QQQ","DIA","IWM","GLD","SLV","USO","TLT","EEM","XLF","XLE","XLK",
+];
+
+function QuickSetup() {
+  const [query, setQuery] = useState("");
+  const [lot, setLot] = useState("0.01");
+  const [maxPos, setMaxPos] = useState("3");
+  const [cfg, setCfg] = useState<Record<string, SymCfg>>({});
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem("sc_symbols");
+      if (s) setCfg(JSON.parse(s));
+      const m = localStorage.getItem("sc_max_positions");
+      if (m) setMaxPos(m);
+      const l = localStorage.getItem("sc_default_lot");
+      if (l) setLot(l);
+    } catch { /* */ }
+  }, []);
+
+  function persist(next: Record<string, SymCfg>) {
+    setCfg(next);
+    try { localStorage.setItem("sc_symbols", JSON.stringify(next)); } catch { /* */ }
+  }
+  function toggle(sym: string) {
+    const cur = cfg[sym] ?? { enabled: false, lot, tp: "30", sl: "20" };
+    persist({ ...cfg, [sym]: { ...cur, lot, enabled: !cur.enabled } });
+  }
+  function saveLot(v: string) {
+    setLot(v);
+    try { localStorage.setItem("sc_default_lot", v); } catch { /* */ }
+    const next: Record<string, SymCfg> = { ...cfg };
+    for (const k of Object.keys(next)) if (next[k].enabled) next[k] = { ...next[k], lot: v };
+    persist(next);
+  }
+  function saveMax(v: string) {
+    setMaxPos(v);
+    try { localStorage.setItem("sc_max_positions", v); } catch { /* */ }
+  }
+
+  const q = query.trim().toUpperCase();
+  const results = q ? ALL_INSTRUMENTS.filter((s) => s.includes(q)).slice(0, 20) : [];
+  const enabledCount = Object.values(cfg).filter((c) => c?.enabled).length;
+
+  return (
+    <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Trading Instruments</div>
+          <div className="mt-0.5 text-sm font-semibold">Search & configure the bot</div>
+        </div>
+        <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+          {enabledCount} on
+        </span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
+        <Search className="h-4 w-4 text-muted-foreground" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search any pair, index, stock, crypto…"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+
+      {q && (
+        <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-1">
+          {results.length ? results.map((s) => {
+            const on = !!cfg[s]?.enabled;
+            return (
+              <button
+                key={s}
+                onClick={() => toggle(s)}
+                className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm hover:bg-white/5"
+              >
+                <span className="font-mono">{s}</span>
+                <span
+                  className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
+                  style={{
+                    borderColor: on ? "color-mix(in oklab, var(--brand) 55%, transparent)" : "color-mix(in oklab, white 10%, transparent)",
+                    background: on ? "color-mix(in oklab, var(--brand) 25%, transparent)" : "transparent",
+                    color: on ? "var(--brand-glow, var(--brand))" : "var(--muted-foreground, #999)",
+                  }}
+                >
+                  {on ? "On" : "Add"}
+                </span>
+              </button>
+            );
+          }) : (
+            <div className="px-2 py-3 text-center text-xs text-muted-foreground">No matches</div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Lot size</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={lot}
+            onChange={(e) => saveLot(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm font-mono"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Max positions</span>
+          <input
+            type="number"
+            min="0"
+            value={maxPos}
+            onChange={(e) => saveMax(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm font-mono"
+          />
+        </label>
+      </div>
+      <div className="mt-1.5 text-[10px] text-muted-foreground">
+        0 = unlimited. Bot opens up to this many positions per cycle.
+      </div>
+    </section>
+  );
+}
 
 function Index() {
   const [running, setRunning] = useState(false);
@@ -409,7 +522,10 @@ function Index() {
       setExec({ status: "No broker linked", detail: "Open Broker Connection to link MT5." });
       return;
     }
-    const active = Object.entries(symbols).filter(([, c]) => c.enabled);
+    let active = Object.entries(symbols).filter(([, c]) => c.enabled);
+    let maxPositions = 0;
+    try { maxPositions = Number(localStorage.getItem("sc_max_positions") || "0") || 0; } catch { /* */ }
+    if (maxPositions > 0) active = active.slice(0, maxPositions);
     if (!active.length) {
       setExec({ status: "No symbols enabled", detail: "Open Symbols to enable pairs." });
       return;
@@ -445,50 +561,50 @@ function Index() {
         background: `radial-gradient(80% 50% at 50% 0%, ${theme.brand.replace(")", " / 0.35)")} , transparent), ${theme.bg}`,
       }}
     >
-      {/* Robot logo as faint full-page background */}
+      {/* Full-visible meditating robot + raining dollars — animates when running */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           backgroundImage: `url(${meditatingRobot})`,
           backgroundRepeat: "no-repeat",
-          backgroundPosition: "center 55%",
-          backgroundSize: "min(80vw, 480px)",
-          opacity: 0.12,
-          filter: "drop-shadow(0 0 40px var(--brand))",
+          backgroundPosition: "center center",
+          backgroundSize: "cover",
+          animation: running ? "bgPulse 6s ease-in-out infinite" : "none",
+          transformOrigin: "center",
         }}
       />
-      {/* Rotating LED ring surrounding the background robot */}
+      {/* Themed color wash — reacts to the selected background theme */}
       <div
         aria-hidden
-        className="pointer-events-none fixed left-1/2 top-[55%] z-0 -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          width: "min(92vw, 560px)",
-          height: "min(92vw, 560px)",
+          background: `radial-gradient(80% 60% at 50% 40%, color-mix(in oklab, var(--brand) 55%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in oklab, var(--app-bg) 55%, transparent) 0%, color-mix(in oklab, var(--app-bg) 80%, transparent) 100%)`,
+          mixBlendMode: "multiply",
         }}
-      >
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `conic-gradient(from 0deg, transparent 0deg, var(--brand) 80deg, transparent 160deg, var(--brand-glow) 240deg, transparent 320deg, var(--brand) 360deg)`,
-            mask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
-            WebkitMask: "radial-gradient(circle, transparent 68%, black 70%, black 76%, transparent 78%)",
-            animation: "spin 14s linear infinite",
-            opacity: 0.55,
-            filter: "drop-shadow(0 0 12px var(--brand))",
-          }}
-        />
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `conic-gradient(from 180deg, transparent 0deg, var(--brand-glow) 60deg, transparent 140deg, var(--brand) 220deg, transparent 300deg)`,
-            mask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
-            WebkitMask: "radial-gradient(circle, transparent 82%, black 83%, black 86%, transparent 88%)",
-            animation: "spin 22s linear infinite reverse",
-            opacity: 0.4,
-          }}
-        />
-      </div>
+      />
+      {/* Falling dollar signs (only when running) */}
+      {running && (
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute font-black"
+              style={{
+                left: `${(i * 7 + 3) % 100}%`,
+                top: "-8%",
+                fontSize: `${12 + (i % 5) * 4}px`,
+                color: "var(--brand-glow, var(--brand))",
+                textShadow: "0 0 10px var(--brand)",
+                animation: `rainDrop ${4 + (i % 6)}s linear ${i * 0.35}s infinite`,
+                opacity: 0.75,
+              }}
+            >
+              $
+            </span>
+          ))}
+        </div>
+      )}
       <div className="relative z-10 mx-auto max-w-md px-4 pb-32 pt-6">
         <header className="relative flex items-center justify-center">
           <Logo />
@@ -672,6 +788,21 @@ function Index() {
             </div>
           )}
         </section>
+
+        <QuickSetup />
+
+        <div
+          className="mt-4 flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em]"
+          style={{
+            background: "color-mix(in oklab, var(--brand) 18%, transparent)",
+            borderColor: "color-mix(in oklab, var(--brand) 45%, transparent)",
+            color: "var(--brand-glow, var(--brand))",
+            boxShadow: "0 0 24px -8px var(--brand)",
+          }}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          <span>Powered by Algo Trading</span>
+        </div>
 
         <Link
           to="/mentor"
