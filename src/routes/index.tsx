@@ -381,7 +381,10 @@ function Index() {
       setExec({ status: "No broker linked", detail: "Open Broker Connection to link MT5." });
       return;
     }
-    const active = Object.entries(symbols).filter(([, c]) => c.enabled);
+    let active = Object.entries(symbols).filter(([, c]) => c.enabled);
+    let maxPositions = 0;
+    try { maxPositions = Number(localStorage.getItem("sc_max_positions") || "0") || 0; } catch { /* */ }
+    if (maxPositions > 0) active = active.slice(0, maxPositions);
     if (!active.length) {
       setExec({ status: "No symbols enabled", detail: "Open Symbols to enable pairs." });
       return;
