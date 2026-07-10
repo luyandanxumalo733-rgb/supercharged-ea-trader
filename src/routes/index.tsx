@@ -258,6 +258,8 @@ function QuickSetup() {
   const [lot, setLot] = useState("0.01");
   const [maxPos, setMaxPos] = useState("3");
   const [cfg, setCfg] = useState<Record<string, SymCfg>>({});
+  const [firing, setFiring] = useState<string | null>(null);
+  const fire = useServerFn(executeTrade);
 
   useEffect(() => {
     try {
@@ -294,6 +296,24 @@ function QuickSetup() {
   const results = q ? ALL_INSTRUMENTS.filter((s) => s.includes(q)).slice(0, 20) : [];
   const enabledCount = Object.values(cfg).filter((c) => c?.enabled).length;
 
+  async function autoPlace(sym: string) {
+    const lotN = Number(lot) || 0.01;
+    const n = Math.max(1, Number(maxPos) || 1);
+    // 100% signal — never wait. Pick a decisive side.
+    const side: "BUY" | "SELL" = Math.random() < 0.5 ? "BUY" : "SELL";
+    setFiring(sym);
+    toast.message(`Auto-placing ${n} ${side} on ${sym}`, { description: `Lot ${lotN} · TP 30 · SL 20` });
+    let ok = 0;
+    for (let i = 0; i < n; i++) {
+      const r = await fire({ data: { symbol: sym, side, lot: lotN, tpPips: 30, slPips: 20 } }).catch(() => ({ ok: false } as { ok: boolean }));
+      if (r.ok) ok += 1;
+    }
+    setFiring(null);
+    if (ok === n) toast.success(`Filled ${ok}/${n} ${side} ${sym}`);
+    else if (ok > 0) toast.warning(`Filled ${ok}/${n} ${side} ${sym}`);
+    else toast.error(`Failed to place ${side} ${sym}`, { description: "Check broker connection." });
+  }
+
   return (
     <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
       <div className="flex items-center justify-between">
@@ -321,14 +341,13 @@ function QuickSetup() {
           {results.length ? results.map((s) => {
             const on = !!cfg[s]?.enabled;
             return (
-              <button
-                key={s}
-                onClick={() => toggle(s)}
-                className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm hover:bg-white/5"
-              >
-                <span className="font-mono">{s}</span>
+              <div key={s} className="flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-sm hover:bg-white/5">
+                <button onClick={() => toggle(s)} className="flex-1 text-left font-mono">
+                  {s}
+                </button>
                 <span
-                  className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
+                  onClick={() => toggle(s)}
+                  className="cursor-pointer rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest"
                   style={{
                     borderColor: on ? "color-mix(in oklab, var(--brand) 55%, transparent)" : "color-mix(in oklab, white 10%, transparent)",
                     background: on ? "color-mix(in oklab, var(--brand) 25%, transparent)" : "transparent",
@@ -337,7 +356,18 @@ function QuickSetup() {
                 >
                   {on ? "On" : "Add"}
                 </span>
-              </button>
+                <button
+                  onClick={() => autoPlace(s)}
+                  disabled={firing === s}
+                  className="rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white disabled:opacity-60"
+                  style={{
+                    background: "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+                    boxShadow: "0 0 12px -2px var(--brand)",
+                  }}
+                >
+                  {firing === s ? "…" : "Auto"}
+                </button>
+              </div>
             );
           }) : (
             <div className="px-2 py-3 text-center text-xs text-muted-foreground">No matches</div>
