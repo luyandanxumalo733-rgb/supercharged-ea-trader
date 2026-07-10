@@ -36,22 +36,6 @@ const THEMES: Array<{ id: string; name: string; bg: string; brand: string; swatc
 function Logo() {
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      <div
-        className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1"
-        style={{
-          borderColor: "color-mix(in oklab, var(--brand) 55%, transparent)",
-          background: "color-mix(in oklab, var(--brand) 22%, transparent)",
-          boxShadow: "0 0 14px -2px var(--brand)",
-        }}
-      >
-        <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ background: "var(--brand-glow, var(--brand))", boxShadow: "0 0 6px var(--brand)", animation: "pulse 1.4s ease-in-out infinite" }}
-        />
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.28em]" style={{ color: "var(--brand)" }}>
-          Powered by Algo Trading
-        </span>
-      </div>
       <div className="flex items-center gap-3">
       <div
         className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-lg"
