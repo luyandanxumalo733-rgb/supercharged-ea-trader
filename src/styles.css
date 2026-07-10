@@ -168,6 +168,10 @@
   0%, 100% { transform: scale(1) translateY(0); filter: brightness(0.9) saturate(1.1); }
   50%      { transform: scale(1.06) translateY(-1%); filter: brightness(1.15) saturate(1.4); }
 }
+@keyframes breathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px var(--brand)); }
+  50%      { transform: scale(1.08); filter: drop-shadow(0 0 40px var(--brand)); }
+}
 @keyframes rainDrop {
   0%   { transform: translateY(-10%); opacity: 0; }
   10%  { opacity: 1; }
