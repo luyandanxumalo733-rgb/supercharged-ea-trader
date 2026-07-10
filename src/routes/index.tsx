@@ -202,7 +202,7 @@ function RobotHero({ running }: { running: boolean }) {
             src={robotLogo}
             alt="SuperCharged EA V1.0 robot mascot"
             className="h-40 w-40 object-cover drop-shadow-[0_0_30px_var(--brand)]"
-            style={{ animation: running ? "float 3s ease-in-out infinite" : "none" }}
+            style={{ animation: running ? "breathe 3.2s ease-in-out infinite" : "none" }}
           />
           <span
             className="absolute left-1/2 top-[45%] h-3 w-3 -translate-x-1/2 rounded-full"
