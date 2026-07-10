@@ -573,9 +573,12 @@ function Index() {
     <div
       className="relative min-h-screen text-foreground transition-colors"
       style={{
-        ["--app-bg" as string]: theme.bg,
+        ["--app-bg" as string]: lightMode ? "oklch(0.98 0.01 260)" : theme.bg,
         ["--brand" as string]: theme.brand,
-        background: `radial-gradient(80% 50% at 50% 0%, ${theme.brand.replace(")", " / 0.35)")} , transparent), ${theme.bg}`,
+        background: lightMode
+          ? `radial-gradient(80% 50% at 50% 0%, ${theme.brand.replace(")", " / 0.22)")} , transparent), oklch(0.98 0.01 260)`
+          : `radial-gradient(80% 50% at 50% 0%, ${theme.brand.replace(")", " / 0.35)")} , transparent), ${theme.bg}`,
+        color: lightMode ? "oklch(0.18 0.03 260)" : undefined,
       }}
     >
       {/* Full-visible meditating robot + raining dollars — animates when running */}
@@ -589,6 +592,7 @@ function Index() {
           backgroundSize: "cover",
           animation: running ? "bgPulse 6s ease-in-out infinite" : "none",
           transformOrigin: "center",
+          opacity: lightMode ? 0.35 : 1,
         }}
       />
       {/* Themed color wash — reacts to the selected background theme */}
@@ -597,7 +601,8 @@ function Index() {
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           background: `radial-gradient(80% 60% at 50% 40%, color-mix(in oklab, var(--brand) 55%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in oklab, var(--app-bg) 55%, transparent) 0%, color-mix(in oklab, var(--app-bg) 80%, transparent) 100%)`,
-          mixBlendMode: "multiply",
+          mixBlendMode: lightMode ? "screen" : "multiply",
+          opacity: lightMode ? 0.55 : 1,
         }}
       />
       {/* Falling dollar signs (only when running) */}
