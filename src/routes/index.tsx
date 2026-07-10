@@ -410,6 +410,7 @@ function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [brokerConnected, setBrokerConnected] = useState(false);
   const [themeId, setThemeIdState] = useState("midnight");
+  const [lightMode, setLightMode] = useState(false);
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
   const [heartbeat, setHeartbeat] = useState<{ ok: boolean; latencyMs: number; at: number } | null>(null);
   const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
@@ -440,6 +441,8 @@ function Index() {
       setBrokerConnected(!!localStorage.getItem("sc_broker"));
       const t = localStorage.getItem("sc_theme");
       if (t) setThemeIdState(t);
+      const m = localStorage.getItem("sc_mode");
+      setLightMode(m === "light");
     } catch { /* ignore */ }
   }, [menuOpen]);
 
