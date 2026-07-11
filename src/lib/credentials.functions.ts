@@ -31,7 +31,7 @@ export const getCredentialStatus = createServerFn({ method: "GET" })
     requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
-    const region = "london-2";
+    const region = (process.env.METAAPI_REGION || "london");
     return {
       token: {
         ...mask(token),
