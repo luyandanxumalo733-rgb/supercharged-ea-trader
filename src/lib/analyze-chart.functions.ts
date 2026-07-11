@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireAppAccess } from "./require-access.server";
 
 export const analyzeChart = createServerFn({ method: "POST" })
   .inputValidator(
@@ -13,6 +14,7 @@ export const analyzeChart = createServerFn({ method: "POST" })
     },
   )
   .handler(async ({ data }) => {
+    requireAppAccess();
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
 

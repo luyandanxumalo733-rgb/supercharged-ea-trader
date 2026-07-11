@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
+import { requireAppAccess } from "./require-access.server";
 
 /**
  * MetaApi.cloud-backed bridge probes. No local Python / Ngrok involved —
@@ -13,6 +14,7 @@ function metaApiBase() {
 export const pingBridge = createServerFn({ method: "POST" })
   .inputValidator((_data: { bridgeUrl?: string } | undefined) => ({}))
   .handler(async () => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
     const t0 = Date.now();
@@ -36,6 +38,7 @@ export const pingBridge = createServerFn({ method: "POST" })
 export const loginBridge = createServerFn({ method: "POST" })
   .inputValidator((_data: unknown) => ({}))
   .handler(async () => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
     if (!token || !accountId) {

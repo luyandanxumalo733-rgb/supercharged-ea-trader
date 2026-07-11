@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
+import { requireAppAccess } from "./require-access.server";
 
 /**
  * Manual MT5 Bridge verification.
@@ -22,6 +23,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
     if (!token || !accountId) {
