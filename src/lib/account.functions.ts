@@ -11,7 +11,8 @@ export const getAccountMetrics = createServerFn({ method: "GET" })
   .handler(async () => {
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
-    const region = process.env.METAAPI_REGION || "new-york";
+    // Hardcoded to the London terminal per deployment requirement.
+    const region = "london";
     if (!token || !accountId) {
       return { ok: false as const, error: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID", region };
     }
