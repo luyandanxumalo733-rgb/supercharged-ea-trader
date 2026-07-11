@@ -9,7 +9,7 @@ import { requireAppAccess } from "./require-access.server";
  * against the London-2 (G2) terminal.
  */
 const PROVISIONING_BASE = "https://mt-provisioning-api-v1.agiliumtrade.ai";
-const CLIENT_BASE = "https://mt-client-api-v1.${process.env.METAAPI_REGION || "london"}.agiliumtrade.ai";
+const clientBase = () => `https://mt-client-api-v1.${process.env.METAAPI_REGION || "london"}.agiliumtrade.ai`;
 
 export const verifyMt5Bridge = createServerFn({ method: "POST" })
   .inputValidator((data: { login: string; password: string; server: string }) => {
