@@ -6,8 +6,8 @@ import { scrubSecrets } from "./scrub.server";
  * we hit the hosted MetaApi REST endpoint for the account.
  */
 function metaApiBase() {
-  const region = process.env.METAAPI_REGION || "new-york";
-  return `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
+  // Hardcoded to the London terminal per deployment requirement.
+  return `https://mt-client-api-v1.london.agiliumtrade.ai`;
 }
 
 export const pingBridge = createServerFn({ method: "POST" })
