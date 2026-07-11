@@ -57,7 +57,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
     // 2) Verify against london-2 (G2 Infrastructure grid).
     const t0 = Date.now();
     try {
-      const res = await fetch(`${CLIENT_BASE}/users/current/accounts/${accountId}/account-information`, {
+      const res = await fetch(`${clientBase()}/users/current/accounts/${accountId}/account-information`, {
         headers: { "auth-token": token },
         signal: AbortSignal.timeout(10000),
       });
