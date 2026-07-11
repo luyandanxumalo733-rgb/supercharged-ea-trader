@@ -7,7 +7,7 @@ import { scrubSecrets } from "./scrub.server";
  */
 function metaApiBase() {
   // Hardcoded to the London terminal per deployment requirement.
-  return `https://mt-client-api-v1.london.agiliumtrade.ai`;
+  return `https://mt-client-api-v1.london-2.agiliumtrade.ai`;
 }
 
 export const pingBridge = createServerFn({ method: "POST" })

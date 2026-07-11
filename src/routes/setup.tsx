@@ -45,13 +45,13 @@ function Setup() {
   async function runHealth() {
     setHealth({ state: "running" });
     const r = await ping({ data: {} });
-    setHealth(r.ok ? { state: "ok", detail: `Connected to London terminal in ${r.latencyMs}ms` } : { state: "fail", detail: `MetaApi unreachable — ${r.body}` });
+    setHealth(r.ok ? { state: "ok", detail: `Connected to London-2 G2 grid in ${r.latencyMs}ms` } : { state: "fail", detail: `MetaApi unreachable — ${r.body}` });
     if (r.ok) setStep(2);
   }
   async function runLogin() {
     setLogin({ state: "running" });
     const r = await login({ data: {} });
-    setLogin(r.ok ? { state: "ok", detail: "Connected — MT5 account verified on London terminal." } : { state: "fail", detail: `Verification failed — ${r.body}` });
+    setLogin(r.ok ? { state: "ok", detail: "Connected — MT5 account verified on London-2 G2 grid." } : { state: "fail", detail: `Verification failed — ${r.body}` });
     if (r.ok) setStep(3);
   }
   function finish() {

@@ -27,7 +27,7 @@ export const executeTrade = createServerFn({ method: "POST" })
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
     // Hardcoded to the London terminal per deployment requirement.
-    const region = "london";
+    const region = "london-2";
     if (!token || !accountId) {
       return { ok: false, status: 0, body: "MetaApi not configured: add METAAPI_TOKEN and METAAPI_ACCOUNT_ID secrets.", attempts: 0 };
     }
