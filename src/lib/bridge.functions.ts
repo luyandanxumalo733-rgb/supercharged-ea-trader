@@ -8,7 +8,7 @@ import { requireAppAccess } from "./require-access.server";
  */
 function metaApiBase() {
   // Hardcoded to the London terminal per deployment requirement.
-  return `https://mt-client-api-v1.london-2.agiliumtrade.ai`;
+  return `https://mt-client-api-v1.${process.env.METAAPI_REGION || "london"}.agiliumtrade.ai`;
 }
 
 export const pingBridge = createServerFn({ method: "POST" })
