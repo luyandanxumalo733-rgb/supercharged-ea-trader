@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
+import { requireAppAccess } from "./require-access.server";
 
 /**
  * Live account metrics pulled from MetaApi.cloud (cloud-g2, region from
@@ -9,6 +10,7 @@ import { scrubSecrets } from "./scrub.server";
 export const getAccountMetrics = createServerFn({ method: "GET" })
   .inputValidator((_: unknown) => ({}))
   .handler(async () => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
     // Hardcoded to the London terminal per deployment requirement.

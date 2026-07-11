@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
+import { requireAppAccess } from "./require-access.server";
 
 type Side = "BUY" | "SELL";
 export type TradeRequest = {
@@ -19,11 +20,35 @@ export type TradeRequest = {
  */
 export const executeTrade = createServerFn({ method: "POST" })
   .inputValidator((data: TradeRequest) => {
-    if (!data.symbol || !data.side) throw new Error("symbol/side required");
-    if (!(data.lot > 0)) throw new Error("lot must be > 0");
-    return data;
+    if (!data || typeof data !== "object") throw new Error("invalid payload");
+    // Symbol: uppercase alnum + a few common separators, 3–16 chars.
+    // Covers forex, metals, indices, crypto, and stock tickers accepted by MetaApi.
+    const symbol = typeof data.symbol === "string" ? data.symbol.trim().toUpperCase() : "";
+    if (!/^[A-Z0-9._#]{3,16}$/.test(symbol)) {
+      throw new Error("invalid symbol");
+    }
+    // Side must be a strict enum.
+    if (data.side !== "BUY" && data.side !== "SELL") {
+      throw new Error("side must be BUY or SELL");
+    }
+    // Lot: positive finite, upper-bounded to protect the account from margin blow-ups.
+    const lot = Number(data.lot);
+    if (!Number.isFinite(lot) || lot <= 0 || lot > 10) {
+      throw new Error("lot must be > 0 and <= 10");
+    }
+    // Risk levels required and positive; upper bound keeps callers honest.
+    const tpPips = Number(data.tpPips);
+    const slPips = Number(data.slPips);
+    if (!Number.isFinite(tpPips) || tpPips <= 0 || tpPips > 10000) {
+      throw new Error("tpPips must be > 0 and <= 10000");
+    }
+    if (!Number.isFinite(slPips) || slPips <= 0 || slPips > 10000) {
+      throw new Error("slPips must be > 0 and <= 10000");
+    }
+    return { symbol, side: data.side, lot, tpPips, slPips } satisfies TradeRequest;
   })
   .handler(async ({ data }) => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const accountId = process.env.METAAPI_ACCOUNT_ID;
     // Hardcoded to the London terminal per deployment requirement.

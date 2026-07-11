@@ -72,17 +72,30 @@ function PasscodeGate({ onUnlock }: { onUnlock: () => void }) {
     }
     setBioBusy(true);
     try {
-      await navigator.credentials.get({
-        publicKey: {
-          challenge: crypto.getRandomValues(new Uint8Array(32)),
-          timeout: 30000,
-          userVerification: "required",
-        },
-      } as CredentialRequestOptions).catch(() => null);
-      // Even if no platform credential exists, treat a successful userVerification
-      // OS prompt (Face/Touch ID / Android biometric) as unlock alongside an existing PIN.
-      if (hasPin) onUnlock();
-      else setError("Set a passcode first, then enable biometric on next unlock.");
+      if (!hasPin) {
+        setError("Set a passcode first, then enable biometric on next unlock.");
+        return;
+      }
+      // Require an actual PublicKeyCredential from the OS biometric prompt.
+      // navigator.credentials.get() returns null when no credential matches
+      // and rejects on user cancellation — both must block unlock.
+      let cred: Credential | null = null;
+      try {
+        cred = await navigator.credentials.get({
+          publicKey: {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            timeout: 30000,
+            userVerification: "required",
+          },
+        } as CredentialRequestOptions);
+      } catch {
+        cred = null;
+      }
+      if (cred && typeof (cred as PublicKeyCredential).rawId !== "undefined") {
+        onUnlock();
+      } else {
+        setError("Biometric failed or cancelled. Enter your passcode.");
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {

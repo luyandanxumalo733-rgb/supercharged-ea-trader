@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
+import { requireAppAccess } from "./require-access.server";
 
 /**
  * One-shot diagnostic: asks the region-agnostic MetaApi provisioning API
@@ -11,6 +12,7 @@ const REGIONS = ["new-york", "london", "singapore"];
 export const diagnoseMetaApi = createServerFn({ method: "POST" })
   .inputValidator((_: unknown) => ({}))
   .handler(async () => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const id = process.env.METAAPI_ACCOUNT_ID;
     const configuredRegion = process.env.METAAPI_REGION || "new-york";
@@ -52,6 +54,7 @@ export const diagnoseMetaApi = createServerFn({ method: "POST" })
 export const deployMetaApiAccount = createServerFn({ method: "POST" })
   .inputValidator((_: unknown) => ({}))
   .handler(async () => {
+    requireAppAccess();
     const token = process.env.METAAPI_TOKEN;
     const id = process.env.METAAPI_ACCOUNT_ID;
     if (!token || !id) return { ok: false, status: 0, body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID" };

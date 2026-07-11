@@ -17,6 +17,23 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+// Attach the app access key from localStorage to every server-fn call.
+// Server-side handlers that need auth call requireAppAccess() to enforce it.
+const attachAppAccess = createMiddleware({ type: "function" }).client(
+  async ({ next }) => {
+    let key = "";
+    if (typeof window !== "undefined") {
+      try {
+        key = window.localStorage.getItem("sc_app_key") ?? "";
+      } catch {
+        /* ignore */
+      }
+    }
+    return next({ headers: key ? { "x-app-access-key": key } : {} });
+  },
+);
+
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware],
+  functionMiddleware: [attachAppAccess],
 }));
