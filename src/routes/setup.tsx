@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket, KeyRound, Eye, EyeOff, Server as ServerIcon } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
 import { pingBridge, loginBridge } from "@/lib/bridge.functions";
+import { verifyMt5Bridge } from "@/lib/verify-mt5.functions";
 import { diagnoseMetaApi } from "@/lib/diagnose.functions";
 // keep referenced so the server-fn plugin registers it
 void diagnoseMetaApi;
@@ -24,12 +25,45 @@ type Probe = { state: "idle" | "running" | "ok" | "fail"; detail?: string };
 function Setup() {
   const ping = useServerFn(pingBridge);
   const login = useServerFn(loginBridge);
+  const verify = useServerFn(verifyMt5Bridge);
   const nav = useNavigate();
 
   const [step, setStep] = useState<Step>(0);
   const [reqProbe, setReq] = useState<Probe>({ state: "idle" });
   const [healthProbe, setHealth] = useState<Probe>({ state: "idle" });
   const [loginProbe, setLogin] = useState<Probe>({ state: "idle" });
+
+  // Manual MT5 credential wizard state
+  const [mtLogin, setMtLogin] = useState("");
+  const [mtPass, setMtPass] = useState("");
+  const [mtServer, setMtServer] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [verifyProbe, setVerify] = useState<Probe>({ state: "idle" });
+  const [connected, setConnected] = useState(false);
+
+  async function runVerify() {
+    if (!mtLogin || !mtPass || !mtServer) {
+      setVerify({ state: "fail", detail: "Enter Account ID, Password, and Server." });
+      return;
+    }
+    setVerify({ state: "running" });
+    const r = await verify({ data: { login: mtLogin, password: mtPass, server: mtServer } });
+    if (r.ok) {
+      setVerify({ state: "ok", detail: `MT5 Bridge Connected Successfully · london-2 G2 · ${("latencyMs" in r && r.latencyMs) || 0}ms` });
+      setConnected(true);
+      try {
+        localStorage.setItem("sc_bridge_validated", "1");
+        localStorage.setItem("sc_bridge_validated_at", new Date().toISOString());
+        localStorage.setItem("sc_bridge_server", mtServer);
+        localStorage.setItem("sc_bridge_login", mtLogin);
+      } catch { /* */ }
+      // Auto-run deployment (redirect to dashboard which auto-starts Algo Trading)
+      setTimeout(() => nav({ to: "/" }), 1400);
+    } else {
+      setVerify({ state: "fail", detail: `Verification failed (${r.stage}) — ${r.body || "unknown error"}` });
+      setConnected(false);
+    }
+  }
 
   async function runReq() {
     setReq({ state: "running" });
@@ -95,6 +129,74 @@ function Setup() {
               Add your <b className="text-foreground">METAAPI_TOKEN</b> and <b className="text-foreground">METAAPI_ACCOUNT_ID</b> on the
               <Link to="/bridge" className="ml-1 underline">MT5 Bridge</Link> page, then run the checks below.
             </p>
+          </section>
+
+          {/* Manual MT5 Bridge Setup Wizard */}
+          <section className="mt-4 rounded-2xl border border-white/10 bg-[oklch(0.18_0.06_260_/_0.7)] p-4">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))" }}>
+                <ServerIcon className="h-4 w-4 text-white" />
+              </span>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Manual Verification</div>
+                <h2 className="text-sm font-bold">MT5 Bridge Setup Wizard</h2>
+              </div>
+              {connected && (
+                <span className="ml-auto inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-widest"
+                  style={{ borderColor: "var(--success)", color: "var(--success)", background: "oklch(0.35 0.15 150 / 0.15)", boxShadow: "0 0 12px -2px var(--success)" }}>
+                  <CheckCircle2 className="h-3 w-3" /> Connected
+                </span>
+              )}
+            </div>
+
+            <div className="mt-3 space-y-2">
+              <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">Account ID (MT5 Login)</label>
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3">
+                <KeyRound className="h-4 w-4 text-muted-foreground" />
+                <input inputMode="numeric" autoComplete="off" value={mtLogin} onChange={(e) => setMtLogin(e.target.value)}
+                  placeholder="e.g. 51234567" className="w-full bg-transparent py-2.5 text-sm outline-none" />
+              </div>
+
+              <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">Password (Investor or Master)</label>
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3">
+                <input type={showPass ? "text" : "password"} autoComplete="off" value={mtPass} onChange={(e) => setMtPass(e.target.value)}
+                  placeholder="MT5 password" className="w-full bg-transparent py-2.5 text-sm outline-none" />
+                <button type="button" onClick={() => setShowPass((s) => !s)} className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:text-foreground">
+                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+
+              <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">Server Name</label>
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3">
+                <ServerIcon className="h-4 w-4 text-muted-foreground" />
+                <input autoComplete="off" value={mtServer} onChange={(e) => setMtServer(e.target.value)}
+                  placeholder="e.g. HeadWay-Demo or HeadWay-Live" className="w-full bg-transparent py-2.5 text-sm outline-none" />
+              </div>
+
+              <div className="text-[10px] text-muted-foreground">
+                Region pinned to <b className="text-foreground">london-2</b> (G2 Infrastructure grid).
+              </div>
+
+              {verifyProbe.detail && (
+                <div className={`rounded-lg border p-2 text-[11px] ${verifyProbe.state === "ok" ? "border-[var(--success)]/40 text-[var(--success)]" : verifyProbe.state === "fail" ? "border-[var(--danger)]/40 text-[var(--danger)]" : "border-white/10 text-muted-foreground"}`}>
+                  {verifyProbe.detail}
+                </div>
+              )}
+
+              <button
+                onClick={runVerify}
+                disabled={verifyProbe.state === "running"}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold uppercase tracking-widest text-white disabled:opacity-40"
+                style={{ background: connected
+                  ? "linear-gradient(135deg, var(--success), oklch(0.45 0.15 150))"
+                  : "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))",
+                  boxShadow: connected ? "0 0 18px -4px var(--success)" : "0 0 18px -4px oklch(0.62 0.22 255)" }}
+              >
+                {verifyProbe.state === "running" ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</>
+                  : connected ? <><CheckCircle2 className="h-4 w-4" /> MT5 Bridge Connected Successfully</>
+                  : <><Plug className="h-4 w-4" /> Verify Connection</>}
+              </button>
+            </div>
           </section>
 
           <ol className="mt-4 space-y-3">
