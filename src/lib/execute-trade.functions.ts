@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
 import { requireAppAccess } from "./require-access.server";
+import { getMetaApiConfig } from "./metaapi-config.server";
 
 type Side = "BUY" | "SELL";
 export type TradeRequest = {
@@ -49,12 +50,9 @@ export const executeTrade = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     requireAppAccess();
-    const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
-    // Hardcoded to the London terminal per deployment requirement.
-    const region = (process.env.METAAPI_REGION || "london");
+    const { token, accountId, region } = getMetaApiConfig();
     if (!token || !accountId) {
-      return { ok: false, status: 0, body: "MetaApi not configured: add METAAPI_TOKEN and METAAPI_ACCOUNT_ID secrets.", attempts: 0 };
+      return { ok: false, status: 0, body: "MetaApi not configured: open API Integration in the dashboard and enter your MetaApi Token and MT5 Account ID.", attempts: 0 };
     }
     const url = `https://mt-client-api-v1.${region}.agiliumtrade.ai/users/current/accounts/${accountId}/trade`;
     const payload = JSON.stringify({
