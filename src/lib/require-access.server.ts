@@ -2,34 +2,30 @@ import { getRequestHeader } from "@tanstack/react-start/server";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 /**
- * Server-side access gate for sensitive server functions (trade execution,
- * account metrics, AI credit spend, bridge probes, credential status, and
- * MetaApi provisioning). Requires the caller to supply the shared
- * APP_ACCESS_KEY as an `x-app-access-key` header. Client middleware attaches
- * it automatically from localStorage after the user unlocks the app.
+ * Access gate for sensitive server functions.
  *
- * Fail-closed: if APP_ACCESS_KEY is unset in the environment, ALL protected
- * calls are rejected. The value never leaves the server — we only compare
- * SHA-256 digests with a timing-safe check.
+ * The /unlock flow has been retired — MetaApi credentials are now configured
+ * from the in-dashboard API Integration panel. This gate only enforces the
+ * APP_ACCESS_KEY header when the server has an APP_ACCESS_KEY secret set.
+ * When no APP_ACCESS_KEY is configured, calls are allowed through so the
+ * dashboard can drive execution without a hardcoded unlock step.
  */
 export function requireAppAccess(): void {
   const expected = process.env.APP_ACCESS_KEY;
-  if (!expected) {
-    throw new Error("Unauthorized: APP_ACCESS_KEY not configured on server.");
-  }
+  if (!expected) return; // no gate configured — allow
   const supplied = getRequestHeader("x-app-access-key") ?? "";
   const a = createHash("sha256").update(String(supplied), "utf8").digest();
   const b = createHash("sha256").update(expected, "utf8").digest();
-  if (!timingSafeEqual(a, b)) {
+  if (a.length !== b.length || !timingSafeEqual(a, b)) {
     throw new Error("Unauthorized: invalid or missing app access key.");
   }
 }
 
-/** Non-throwing check used by an unlock endpoint. */
+/** Non-throwing check used by legacy endpoints. */
 export function verifyAppAccess(supplied: string): boolean {
   const expected = process.env.APP_ACCESS_KEY;
-  if (!expected) return false;
+  if (!expected) return true;
   const a = createHash("sha256").update(String(supplied ?? ""), "utf8").digest();
   const b = createHash("sha256").update(expected, "utf8").digest();
-  return timingSafeEqual(a, b);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
