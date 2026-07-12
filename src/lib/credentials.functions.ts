@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireAppAccess } from "./require-access.server";
+import { getMetaApiConfig } from "./metaapi-config.server";
 
 /**
  * Returns ONLY a non-reversible fingerprint of the MetaApi credentials.
@@ -29,9 +30,7 @@ export const getCredentialStatus = createServerFn({ method: "GET" })
   .inputValidator((_: unknown) => ({}))
   .handler(async () => {
     requireAppAccess();
-    const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
-    const region = (process.env.METAAPI_REGION || "london");
+    const { token, accountId, region } = getMetaApiConfig();
     return {
       token: {
         ...mask(token),

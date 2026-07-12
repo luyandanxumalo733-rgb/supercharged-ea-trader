@@ -9,6 +9,8 @@ import { executeTrade } from "@/lib/execute-trade.functions";
 import { pingBridge } from "@/lib/bridge.functions";
 import { getAccountMetrics } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
+import { ApiIntegrationPanel, isMetaApiConfigured, loadMetaApiConfig } from "@/components/ApiIntegrationPanel";
+import { AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -414,6 +416,7 @@ function Index() {
   const [exec, setExec] = useState<{ status: string; detail?: string } | null>(null);
   const [heartbeat, setHeartbeat] = useState<{ ok: boolean; latencyMs: number; at: number } | null>(null);
   const [lastTrade, setLastTrade] = useState<{ symbol: string; side: string; ok: boolean; at: number } | null>(null);
+  const [apiConfigured, setApiConfigured] = useState(false);
   const fire = useServerFn(executeTrade);
   const heartbeatFn = useServerFn(pingBridge);
   const metricsFn = useServerFn(getAccountMetrics);
@@ -444,6 +447,7 @@ function Index() {
       const m = localStorage.getItem("sc_mode");
       setLightMode(m === "light");
     } catch { /* ignore */ }
+    setApiConfigured(isMetaApiConfigured(loadMetaApiConfig()));
   }, [menuOpen]);
 
   // Auto-start the moment a broker is linked (real or demo). The bot then
@@ -643,6 +647,32 @@ function Index() {
 
         <RobotHero running={running} />
 
+        {!apiConfigured && (
+          <div
+            className="mt-4 flex items-start gap-3 rounded-2xl border p-3"
+            style={{
+              borderColor: "color-mix(in oklab, var(--danger) 55%, transparent)",
+              background: "color-mix(in oklab, var(--danger) 12%, transparent)",
+            }}
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--danger)" }} />
+            <div className="flex-1">
+              <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--danger)" }}>
+                MetaApi not configured
+              </div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground">
+                Add your MetaApi Token and MT5 Account ID below to enable execution.
+              </div>
+            </div>
+            <a
+              href="#api-integration"
+              className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-foreground transition hover:bg-white/20"
+            >
+              Open settings
+            </a>
+          </div>
+        )}
+
         <section className="mt-4 rounded-2xl border border-white/10 bg-[var(--surface)] p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -812,6 +842,11 @@ function Index() {
         </section>
 
         <QuickSetup />
+
+        <ApiIntegrationPanel
+          id="api-integration"
+          onChange={(cfg) => setApiConfigured(!!(cfg.token && cfg.accountId))}
+        />
 
         <div
           className="mt-4 flex items-center justify-center gap-2 rounded-full border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.25em]"
