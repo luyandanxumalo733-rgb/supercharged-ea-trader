@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
 import { requireAppAccess } from "./require-access.server";
+import { getMetaApiConfig } from "./metaapi-config.server";
 
 /**
  * Manual MT5 Bridge verification.
@@ -9,7 +10,7 @@ import { requireAppAccess } from "./require-access.server";
  * against the London-2 (G2) terminal.
  */
 const PROVISIONING_BASE = "https://mt-provisioning-api-v1.agiliumtrade.ai";
-const clientBase = () => `https://mt-client-api-v1.${process.env.METAAPI_REGION || "london"}.agiliumtrade.ai`;
+const clientBase = (region: string) => `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
 
 export const verifyMt5Bridge = createServerFn({ method: "POST" })
   .inputValidator((data: { login: string; password: string; server: string }) => {
@@ -24,8 +25,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     requireAppAccess();
-    const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
+    const { token, accountId, region } = getMetaApiConfig();
     if (!token || !accountId) {
       return { ok: false, stage: "config", body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID secrets." };
     }
@@ -42,7 +42,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
           login: data.login,
           password: data.password,
           server: data.server,
-          region: (process.env.METAAPI_REGION || "london"),
+          region,
         }),
         signal: AbortSignal.timeout(12000),
       });
@@ -57,7 +57,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
     // 2) Verify against london-2 (G2 Infrastructure grid).
     const t0 = Date.now();
     try {
-      const res = await fetch(`${clientBase()}/users/current/accounts/${accountId}/account-information`, {
+      const res = await fetch(`${clientBase(region)}/users/current/accounts/${accountId}/account-information`, {
         headers: { "auth-token": token },
         signal: AbortSignal.timeout(10000),
       });
@@ -67,7 +67,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
         stage: "verify",
         status: res.status,
         latencyMs: Date.now() - t0,
-        region: (process.env.METAAPI_REGION || "london"),
+        region,
         body: scrubSecrets(body).slice(0, 300),
       };
     } catch (e) {
