@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
 import { requireAppAccess } from "./require-access.server";
+import { getMetaApiConfig } from "./metaapi-config.server";
 
 /**
  * Live account metrics pulled from MetaApi.cloud (cloud-g2, region from
@@ -11,10 +12,7 @@ export const getAccountMetrics = createServerFn({ method: "GET" })
   .inputValidator((_: unknown) => ({}))
   .handler(async () => {
     requireAppAccess();
-    const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
-    // Hardcoded to the London terminal per deployment requirement.
-    const region = (process.env.METAAPI_REGION || "london");
+    const { token, accountId, region } = getMetaApiConfig();
     if (!token || !accountId) {
       return { ok: false as const, error: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID", region };
     }
