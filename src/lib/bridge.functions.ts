@@ -1,27 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { scrubSecrets } from "./scrub.server";
 import { requireAppAccess } from "./require-access.server";
+import { getMetaApiConfig } from "./metaapi-config.server";
 
-/**
- * MetaApi.cloud-backed bridge probes. No local Python / Ngrok involved —
- * we hit the hosted MetaApi REST endpoint for the account.
- */
-function metaApiBase() {
-  // Hardcoded to the London terminal per deployment requirement.
-  return `https://mt-client-api-v1.${process.env.METAAPI_REGION || "london"}.agiliumtrade.ai`;
+function metaApiBase(region: string) {
+  return `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
 }
 
 export const pingBridge = createServerFn({ method: "POST" })
   .inputValidator((_data: { bridgeUrl?: string } | undefined) => ({}))
   .handler(async () => {
     requireAppAccess();
-    const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
+    const { token, accountId, region } = getMetaApiConfig();
     const t0 = Date.now();
     if (!token || !accountId) {
       return { ok: false, status: 0, latencyMs: 0, body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID" };
     }
-    const url = `${metaApiBase()}/users/current/accounts/${accountId}/account-information`;
+    const url = `${metaApiBase(region)}/users/current/accounts/${accountId}/account-information`;
     try {
       const res = await fetch(url, {
         headers: { "auth-token": token },
@@ -39,12 +34,11 @@ export const loginBridge = createServerFn({ method: "POST" })
   .inputValidator((_data: unknown) => ({}))
   .handler(async () => {
     requireAppAccess();
-    const token = process.env.METAAPI_TOKEN;
-    const accountId = process.env.METAAPI_ACCOUNT_ID;
+    const { token, accountId, region } = getMetaApiConfig();
     if (!token || !accountId) {
       return { ok: false, status: 0, body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID" };
     }
-    const url = `${metaApiBase()}/users/current/accounts/${accountId}/account-information`;
+    const url = `${metaApiBase(region)}/users/current/accounts/${accountId}/account-information`;
     try {
       const res = await fetch(url, {
         headers: { "auth-token": token },
