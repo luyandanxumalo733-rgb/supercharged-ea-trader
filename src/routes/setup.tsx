@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket, KeyRound, Eye, EyeOff, Server as ServerIcon } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
-import { pingBridge, loginBridge } from "@/lib/bridge.functions";
+import { pingBridge, loginBridge, deployMetaApiAccount } from "@/lib/bridge.functions";
 import { verifyMt5Bridge } from "@/lib/verify-mt5.functions";
 import { diagnoseMetaApi } from "@/lib/diagnose.functions";
 // keep referenced so the server-fn plugin registers it
@@ -26,6 +26,7 @@ function Setup() {
   const ping = useServerFn(pingBridge);
   const login = useServerFn(loginBridge);
   const verify = useServerFn(verifyMt5Bridge);
+  const deploy = useServerFn(deployMetaApiAccount);
   const nav = useNavigate();
 
   const [step, setStep] = useState<Step>(0);
@@ -49,7 +50,7 @@ function Setup() {
     setVerify({ state: "running" });
     const r = await verify({ data: { login: mtLogin, password: mtPass, server: mtServer } });
     if (r.ok) {
-      setVerify({ state: "ok", detail: `MT5 Bridge Connected Successfully · london-2 G2 · ${("latencyMs" in r && r.latencyMs) || 0}ms` });
+      setVerify({ state: "ok", detail: `MT5 Bridge Connected Successfully · new-york G2 · ${("latencyMs" in r && r.latencyMs) || 0}ms` });
       setConnected(true);
       try {
         localStorage.setItem("sc_bridge_validated", "1");
@@ -78,14 +79,25 @@ function Setup() {
   }
   async function runHealth() {
     setHealth({ state: "running" });
+    // Auto-initialize the cloud bridge if the account isn't DEPLOYED yet.
+    const d = await deploy({ data: {} }).catch(() => null);
+    if (d && !d.ok && d.state === "unknown" && d.body) {
+      setHealth({ state: "fail", detail: `Cloud bridge init failed — ${d.body}` });
+      return;
+    }
     const r = await ping({ data: {} });
-    setHealth(r.ok ? { state: "ok", detail: `Connected to London-2 G2 grid in ${r.latencyMs}ms` } : { state: "fail", detail: `MetaApi unreachable — ${r.body}` });
+    const initNote = d?.deployed ? " · cloud bridge auto-deployed" : "";
+    setHealth(
+      r.ok
+        ? { state: "ok", detail: `Connected to New York G2 grid in ${r.latencyMs}ms${initNote}` }
+        : { state: "fail", detail: `MetaApi unreachable — ${r.body}${d?.state ? ` · account state: ${d.state}` : ""}` },
+    );
     if (r.ok) setStep(2);
   }
   async function runLogin() {
     setLogin({ state: "running" });
     const r = await login({ data: {} });
-    setLogin(r.ok ? { state: "ok", detail: "Connected — MT5 account verified on London-2 G2 grid." } : { state: "fail", detail: `Verification failed — ${r.body}` });
+    setLogin(r.ok ? { state: "ok", detail: "Connected — MT5 account verified on New York G2 grid." } : { state: "fail", detail: `Verification failed — ${r.body}` });
     if (r.ok) setStep(3);
   }
   function finish() {
@@ -98,7 +110,7 @@ function Setup() {
 
   const steps: Array<{ label: string; icon: typeof Cloud; probe: Probe; run: () => void; enabled: boolean }> = [
     { label: "MetaApi credentials configured", icon: Cloud, probe: reqProbe, run: runReq, enabled: step >= 0 },
-    { label: "MetaApi cloud reachable", icon: Plug, probe: healthProbe, run: runHealth, enabled: step >= 1 },
+    { label: "Cloud bridge deployed & reachable", icon: Plug, probe: healthProbe, run: runHealth, enabled: step >= 1 },
     { label: "MT5 account verified", icon: ShieldCheck, probe: loginProbe, run: runLogin, enabled: step >= 2 },
   ];
 
@@ -174,7 +186,7 @@ function Setup() {
               </div>
 
               <div className="text-[10px] text-muted-foreground">
-                Region pinned to <b className="text-foreground">london-2</b> (G2 Infrastructure grid).
+                Region pinned to <b className="text-foreground">new-york</b> (G2 Infrastructure grid).
               </div>
 
               {verifyProbe.detail && (
