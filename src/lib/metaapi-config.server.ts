@@ -1,26 +1,22 @@
-import { getRequestHeader } from "@tanstack/react-start/server";
-
 /**
  * Resolve MetaApi credentials for a server-function call.
  *
- * Priority: user-supplied headers (from the in-dashboard API Integration
- * panel, attached by the client middleware in src/start.ts) then process env.
- * This lets each user drive their own MT5 account from the UI without any
- * hardcoded /unlock step, while still supporting a global fallback via
- * project secrets.
+ * Credentials come exclusively from project secrets on the server —
+ * METAAPI_TOKEN, METAAPI_ACCOUNT_ID, and METAAPI_REGION. The in-dashboard
+ * API Integration panel has been retired; the bot connects directly using
+ * these secrets, so the same credentials drive metrics polling, heartbeat,
+ * trade execution, and the setup wizard.
+ *
+ * Region defaults to the high-performance New York G2 grid
+ * (mt-client-api-v1.new-york.agiliumtrade.ai).
  */
 export function getMetaApiConfig(): {
   token: string;
   accountId: string;
   region: string;
-  mt5Password?: string;
-  mt5Server?: string;
 } {
-  const token = getRequestHeader("x-metaapi-token") || process.env.METAAPI_TOKEN || "";
-  const accountId = getRequestHeader("x-metaapi-account-id") || process.env.METAAPI_ACCOUNT_ID || "";
-  const region =
-    getRequestHeader("x-metaapi-region") || process.env.METAAPI_REGION || "london";
-  const mt5Password = getRequestHeader("x-mt5-password") || undefined;
-  const mt5Server = getRequestHeader("x-mt5-server") || undefined;
-  return { token, accountId, region, mt5Password, mt5Server };
+  const token = process.env.METAAPI_TOKEN || "";
+  const accountId = process.env.METAAPI_ACCOUNT_ID || "";
+  const region = process.env.METAAPI_REGION || "new-york";
+  return { token, accountId, region };
 }
