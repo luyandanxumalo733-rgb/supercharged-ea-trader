@@ -25,7 +25,7 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     requireAppAccess();
-    const { token, accountId, region } = getMetaApiConfig();
+    const { token, accountId, region, fallbackRegions } = getMetaApiConfig();
     if (!token || !accountId) {
       return { ok: false, stage: "config", body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID secrets." };
     }
@@ -54,23 +54,31 @@ export const verifyMt5Bridge = createServerFn({ method: "POST" })
       return { ok: false, stage: "provision", body: scrubSecrets((e as Error).message) };
     }
 
-    // 2) Verify against london-2 (G2 Infrastructure grid).
-    const t0 = Date.now();
-    try {
-      const res = await fetch(`${clientBase(region)}/users/current/accounts/${accountId}/account-information`, {
-        headers: { "auth-token": token },
-        signal: AbortSignal.timeout(10000),
-      });
-      const body = await res.text();
-      return {
-        ok: res.ok,
-        stage: "verify",
-        status: res.status,
-        latencyMs: Date.now() - t0,
-        region,
-        body: scrubSecrets(body).slice(0, 300),
-      };
-    } catch (e) {
-      return { ok: false, stage: "verify", body: scrubSecrets((e as Error).message) };
+    // 2) Verify — try primary region, standard fallbacks, then new-york as
+    // an explicit backup (never skipped for manual verification).
+    const candidates = Array.from(new Set([region, ...fallbackRegions, "new-york"]));
+    let lastStatus = 0;
+    let lastBody = "";
+    let lastRegion = region;
+    for (const r of candidates) {
+      const t0 = Date.now();
+      try {
+        const res = await fetch(`${clientBase(r)}/users/current/accounts/${accountId}/account-information`, {
+          headers: { "auth-token": token },
+          signal: AbortSignal.timeout(10000),
+        });
+        const body = await res.text();
+        if (res.ok) {
+          return { ok: true, stage: "verify", status: res.status, latencyMs: Date.now() - t0, region: r, body: scrubSecrets(body).slice(0, 300) };
+        }
+        lastStatus = res.status;
+        lastBody = scrubSecrets(body).slice(0, 300);
+        lastRegion = r;
+        if (res.status === 401 || res.status === 403) break;
+      } catch (e) {
+        lastBody = scrubSecrets((e as Error).message);
+        lastRegion = r;
+      }
     }
+    return { ok: false, stage: "verify", status: lastStatus, region: lastRegion, body: lastBody || "All regions unreachable" };
   });
