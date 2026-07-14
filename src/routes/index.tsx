@@ -356,17 +356,24 @@ function QuickSetup() {
                 >
                   {on ? "On" : "Add"}
                 </span>
-                <button
-                  onClick={() => autoPlace(s)}
-                  disabled={firing === s}
-                  className="rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white disabled:opacity-60"
-                  style={{
-                    background: "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
-                    boxShadow: "0 0 12px -2px var(--brand)",
-                  }}
-                >
-                  {firing === s ? "…" : "Auto"}
-                </button>
+                {on ? (
+                  <button
+                    onClick={() => autoPlace(s)}
+                    disabled={firing === s}
+                    className="rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white disabled:opacity-60"
+                    style={{
+                      background: "linear-gradient(135deg, var(--brand), oklch(0.40 0.15 260))",
+                      boxShadow: "0 0 12px -2px var(--brand)",
+                    }}
+                    title="Auto-trade this instrument"
+                  >
+                    {firing === s ? "…" : "Auto"}
+                  </button>
+                ) : (
+                  <span className="rounded-full border border-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Turn on
+                  </span>
+                )}
               </div>
             );
           }) : (

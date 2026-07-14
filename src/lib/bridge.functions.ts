@@ -63,22 +63,37 @@ export const pingBridge = createServerFn({ method: "POST" })
   .inputValidator((_data: { bridgeUrl?: string } | undefined) => ({}))
   .handler(async () => {
     requireAppAccess();
-    const { token, accountId, region } = getMetaApiConfig();
-    const t0 = Date.now();
+    const { token, accountId, region, fallbackRegions } = getMetaApiConfig();
     if (!token || !accountId) {
-      return { ok: false, status: 0, latencyMs: 0, body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID" };
+      return { ok: false, status: 0, latencyMs: 0, body: "Missing METAAPI_TOKEN / METAAPI_ACCOUNT_ID", region };
     }
-    const url = `${metaApiBase(region)}/users/current/accounts/${accountId}/account-information`;
-    try {
-      const res = await fetch(url, {
-        headers: { "auth-token": token },
-        signal: AbortSignal.timeout(8000),
-      });
-      const body = await res.text();
-      return { ok: res.ok, status: res.status, latencyMs: Date.now() - t0, body: scrubSecrets(body).slice(0, 200) };
-    } catch (e) {
-      return { ok: false, status: 0, latencyMs: Date.now() - t0, body: scrubSecrets((e as Error).message) };
+    // Try primary region, then standard fallback hosting regions (never new-york).
+    const candidates = [region, ...fallbackRegions].filter((r) => r !== "new-york");
+    let lastBody = "";
+    let lastStatus = 0;
+    for (const r of candidates) {
+      const t0 = Date.now();
+      const url = `${metaApiBase(r)}/users/current/accounts/${accountId}/account-information`;
+      try {
+        const res = await fetch(url, {
+          headers: { "auth-token": token },
+          signal: AbortSignal.timeout(8000),
+        });
+        const body = await res.text();
+        if (res.ok) {
+          return { ok: true, status: res.status, latencyMs: Date.now() - t0, body: scrubSecrets(body).slice(0, 200), region: r };
+        }
+        lastBody = scrubSecrets(body).slice(0, 200);
+        lastStatus = res.status;
+        // On 4xx auth errors, no point trying other regions.
+        if (res.status === 401 || res.status === 403) {
+          return { ok: false, status: res.status, latencyMs: Date.now() - t0, body: lastBody, region: r };
+        }
+      } catch (e) {
+        lastBody = scrubSecrets((e as Error).message);
+      }
     }
+    return { ok: false, status: lastStatus, latencyMs: 0, body: lastBody || "All regions unreachable", region: candidates[candidates.length - 1] };
   });
 
 /** Kept for setup wizard compatibility — MetaApi already authenticates the account; this just re-verifies. */
