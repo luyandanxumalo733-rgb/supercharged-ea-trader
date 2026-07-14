@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket, KeyRound, Eye, EyeOff, Server as ServerIcon } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, XCircle, Cloud, ShieldCheck, Plug, Rocket, KeyRound, Eye, EyeOff, Server as ServerIcon, Activity, RefreshCw } from "lucide-react";
 import robotLogo from "@/assets/robot-logo.png";
 import { pingBridge, loginBridge, deployMetaApiAccount } from "@/lib/bridge.functions";
 import { verifyMt5Bridge } from "@/lib/verify-mt5.functions";
+import { bridgeStatus } from "@/lib/bridge-status.functions";
 import { diagnoseMetaApi } from "@/lib/diagnose.functions";
 // keep referenced so the server-fn plugin registers it
 void diagnoseMetaApi;
@@ -27,6 +28,7 @@ function Setup() {
   const login = useServerFn(loginBridge);
   const verify = useServerFn(verifyMt5Bridge);
   const deploy = useServerFn(deployMetaApiAccount);
+  const status = useServerFn(bridgeStatus);
   const nav = useNavigate();
 
   const [step, setStep] = useState<Step>(0);
@@ -41,6 +43,39 @@ function Setup() {
   const [showPass, setShowPass] = useState(false);
   const [verifyProbe, setVerify] = useState<Probe>({ state: "idle" });
   const [connected, setConnected] = useState(false);
+
+  // Live connection status widget state.
+  type LiveStatus = {
+    reachable: boolean;
+    provisioned: boolean;
+    state: string;
+    connectionStatus: string;
+    region: string;
+    latencyMs: number;
+    checkedAt: string;
+    body: string;
+  };
+  const [live, setLive] = useState<LiveStatus | null>(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+
+  async function refreshLive() {
+    setLiveLoading(true);
+    try {
+      const r = await status({ data: {} });
+      setLive(r as LiveStatus);
+    } catch (e) {
+      setLive({ reachable: false, provisioned: false, state: "unknown", connectionStatus: "", region: "", latencyMs: 0, checkedAt: new Date().toISOString(), body: (e as Error).message });
+    } finally {
+      setLiveLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void refreshLive();
+    const id = setInterval(() => { void refreshLive(); }, 20000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function runVerify() {
     if (!mtLogin || !mtPass || !mtServer) {
@@ -148,6 +183,56 @@ function Setup() {
               Add your <b className="text-foreground">METAAPI_TOKEN</b> and <b className="text-foreground">METAAPI_ACCOUNT_ID</b> on the
               <Link to="/bridge" className="ml-1 underline">MT5 Bridge</Link> page, then run the checks below.
             </p>
+          </section>
+
+          {/* Live MetaAPI connection status widget */}
+          <section className="mt-4 rounded-2xl border border-white/10 bg-[oklch(0.18_0.06_260_/_0.7)] p-4">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: "linear-gradient(135deg, oklch(0.62 0.22 255), oklch(0.40 0.18 260))" }}>
+                <Activity className="h-4 w-4 text-white" />
+              </span>
+              <div className="flex-1">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Live Status</div>
+                <h2 className="text-sm font-bold">MetaAPI Connection</h2>
+              </div>
+              <button
+                onClick={() => { void refreshLive(); }}
+                disabled={liveLoading}
+                className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-black/30 text-muted-foreground hover:text-foreground disabled:opacity-40"
+                aria-label="Refresh status"
+              >
+                {liveLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              </button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[
+                { label: "Bridge reachable", ok: !!live?.reachable, detail: live ? (live.reachable ? `${live.region} · ${live.latencyMs}ms` : "Unreachable") : "Checking…" },
+                { label: "Account provisioned", ok: !!live?.provisioned, detail: live ? (live.state || "unknown") + (live.connectionStatus ? ` · ${live.connectionStatus}` : "") : "Checking…" },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl border border-white/10 bg-black/30 p-3">
+                  <div className="flex items-center gap-1.5">
+                    {live == null ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                      : s.ok ? <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
+                      : <XCircle className="h-3.5 w-3.5" style={{ color: "var(--danger)" }} />}
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{s.label}</span>
+                  </div>
+                  <div className="mt-1 text-[11px] font-semibold text-foreground truncate">{s.detail}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
+              <span>Last verified</span>
+              <span className="text-foreground">
+                {live?.checkedAt ? new Date(live.checkedAt).toLocaleTimeString() : "—"}
+              </span>
+            </div>
+            {live && !live.reachable && live.body && (
+              <div className="mt-2 rounded-lg border border-[var(--danger)]/40 bg-black/30 p-2 text-[11px] text-[var(--danger)]">
+                {live.body}
+              </div>
+            )}
           </section>
 
           {/* Manual MT5 Bridge Setup Wizard */}
