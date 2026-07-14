@@ -50,7 +50,8 @@ function Setup() {
     setVerify({ state: "running" });
     const r = await verify({ data: { login: mtLogin, password: mtPass, server: mtServer } });
     if (r.ok) {
-      setVerify({ state: "ok", detail: `MT5 Bridge Connected Successfully · new-york G2 · ${("latencyMs" in r && r.latencyMs) || 0}ms` });
+      const reg = ("region" in r && (r as { region?: string }).region) || "london";
+      setVerify({ state: "ok", detail: `MT5 Bridge Connected Successfully · ${reg} · ${("latencyMs" in r && r.latencyMs) || 0}ms` });
       setConnected(true);
       try {
         localStorage.setItem("sc_bridge_validated", "1");
@@ -76,6 +77,8 @@ function Setup() {
     }
     setReq({ state: "ok", detail: "MetaApi credentials detected." });
     setStep(1);
+    // Auto-chain the next verification step.
+    setTimeout(() => { void runHealth(); }, 300);
   }
   async function runHealth() {
     setHealth({ state: "running" });
@@ -87,17 +90,21 @@ function Setup() {
     }
     const r = await ping({ data: {} });
     const initNote = d?.deployed ? " · cloud bridge auto-deployed" : "";
+    const reg = ("region" in r && (r as { region?: string }).region) || "london";
     setHealth(
       r.ok
-        ? { state: "ok", detail: `Connected to New York G2 grid in ${r.latencyMs}ms${initNote}` }
+        ? { state: "ok", detail: `Connected via ${reg} in ${r.latencyMs}ms${initNote}` }
         : { state: "fail", detail: `MetaApi unreachable — ${r.body}${d?.state ? ` · account state: ${d.state}` : ""}` },
     );
-    if (r.ok) setStep(2);
+    if (r.ok) {
+      setStep(2);
+      setTimeout(() => { void runLogin(); }, 300);
+    }
   }
   async function runLogin() {
     setLogin({ state: "running" });
     const r = await login({ data: {} });
-    setLogin(r.ok ? { state: "ok", detail: "Connected — MT5 account verified on New York G2 grid." } : { state: "fail", detail: `Verification failed — ${r.body}` });
+    setLogin(r.ok ? { state: "ok", detail: "Connected — MT5 account verified via standard hosting grid." } : { state: "fail", detail: `Verification failed — ${r.body}` });
     if (r.ok) setStep(3);
   }
   function finish() {
@@ -186,7 +193,7 @@ function Setup() {
               </div>
 
               <div className="text-[10px] text-muted-foreground">
-                Region pinned to <b className="text-foreground">new-york</b> (G2 Infrastructure grid).
+                Region uses <b className="text-foreground">METAAPI_REGION</b> secret (default <b className="text-foreground">london</b>). Standard fallback hosting regions are tried automatically — new-york is skipped.
               </div>
 
               {verifyProbe.detail && (
