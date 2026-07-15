@@ -14,6 +14,7 @@ import { Route as SymbolsRouteImport } from './routes/symbols'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MentorRouteImport } from './routes/mentor'
+import { Route as ManualRouteImport } from './routes/manual'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as BrokerRouteImport } from './routes/broker'
 import { Route as BridgeRouteImport } from './routes/bridge'
@@ -43,6 +44,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const MentorRoute = MentorRouteImport.update({
   id: '/mentor',
   path: '/mentor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
   '/history': typeof HistoryRoute
+  '/manual': typeof ManualRoute
   '/mentor': typeof MentorRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
   '/history': typeof HistoryRoute
+  '/manual': typeof ManualRoute
   '/mentor': typeof MentorRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/bridge': typeof BridgeRoute
   '/broker': typeof BrokerRoute
   '/history': typeof HistoryRoute
+  '/manual': typeof ManualRoute
   '/mentor': typeof MentorRoute
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/bridge'
     | '/broker'
     | '/history'
+    | '/manual'
     | '/mentor'
     | '/settings'
     | '/setup'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/bridge'
     | '/broker'
     | '/history'
+    | '/manual'
     | '/mentor'
     | '/settings'
     | '/setup'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/bridge'
     | '/broker'
     | '/history'
+    | '/manual'
     | '/mentor'
     | '/settings'
     | '/setup'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   BridgeRoute: typeof BridgeRoute
   BrokerRoute: typeof BrokerRoute
   HistoryRoute: typeof HistoryRoute
+  ManualRoute: typeof ManualRoute
   MentorRoute: typeof MentorRoute
   SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/mentor'
       fullPath: '/mentor'
       preLoaderRoute: typeof MentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   BridgeRoute: BridgeRoute,
   BrokerRoute: BrokerRoute,
   HistoryRoute: HistoryRoute,
+  ManualRoute: ManualRoute,
   MentorRoute: MentorRoute,
   SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
