@@ -24,8 +24,9 @@ export function getMetaApiConfig(): {
   const token = process.env.METAAPI_TOKEN || "";
   const accountId = process.env.METAAPI_ACCOUNT_ID || "";
   const raw = (process.env.METAAPI_REGION || "").trim().toLowerCase();
-  // Infrastructure override: never route through new-york.
-  const region = !raw || raw === "new-york" ? "london" : raw;
+  // Honor the user's METAAPI_REGION exactly (including "new-york").
+  // Default to "london" only when the secret is unset.
+  const region = raw || "london";
   const fallbackRegions = FALLBACK_REGIONS.filter((r) => r !== region);
   return { token, accountId, region, fallbackRegions };
 }
