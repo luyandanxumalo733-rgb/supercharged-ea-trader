@@ -22,13 +22,14 @@ const THEMES = [
   { id: "gold",     name: "Royal Gold",    bg: "oklch(0.14 0.04 80)",  swatch: ["#1a1206", "#574012", "#f5c542"] },
 ];
 
-const LINKS: Array<{ to: "/bridge" | "/broker" | "/setup" | "/symbols" | "/mentor" | "/history"; label: string; desc: string; color: string; icon: typeof Server }> = [
+const LINKS: Array<{ to: "/bridge" | "/broker" | "/setup" | "/symbols" | "/mentor" | "/history" | "/manual"; label: string; desc: string; color: string; icon: typeof Server }> = [
   { to: "/bridge",  label: "MT5 Bridge",         desc: "Test & manage the MetaApi bridge",  color: "oklch(0.70 0.20 200)", icon: Server },
   { to: "/broker",  label: "Broker Connection",  desc: "Link your Headway / MT5 account",   color: "oklch(0.78 0.18 60)",  icon: Link2 },
   { to: "/setup",   label: "Setup Wizard",       desc: "Validate credentials end-to-end",   color: "oklch(0.72 0.22 230)", icon: Rocket },
   { to: "/symbols", label: "Symbols & TP/SL",    desc: "Pick pairs, indexes, stocks",       color: "oklch(0.78 0.16 85)",  icon: Coins },
   { to: "/mentor",  label: "Mentor / License Keys", desc: "Host another robot", color: "oklch(0.70 0.22 290)", icon: KeyRound },
   { to: "/history", label: "Trade History",      desc: "Every order sent to MT5",           color: "oklch(0.65 0.22 200)", icon: History },
+  { to: "/manual",  label: "Manual Signal Panel", desc: "Send a test BUY/SELL to MetaApi", color: "oklch(0.75 0.20 145)", icon: Bell },
 ];
 
 function SettingsPage() {
