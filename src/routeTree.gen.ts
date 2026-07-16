@@ -13,6 +13,7 @@ import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as SymbolsRouteImport } from './routes/symbols'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as Mt5RouteImport } from './routes/mt5'
 import { Route as MentorRouteImport } from './routes/mentor'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -39,6 +40,11 @@ const SetupRoute = SetupRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Mt5Route = Mt5RouteImport.update({
+  id: '/mt5',
+  path: '/mt5',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorRoute = MentorRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/manual': typeof ManualRoute
   '/mentor': typeof MentorRoute
+  '/mt5': typeof Mt5Route
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/manual': typeof ManualRoute
   '/mentor': typeof MentorRoute
+  '/mt5': typeof Mt5Route
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/manual': typeof ManualRoute
   '/mentor': typeof MentorRoute
+  '/mt5': typeof Mt5Route
   '/settings': typeof SettingsRoute
   '/setup': typeof SetupRoute
   '/symbols': typeof SymbolsRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/manual'
     | '/mentor'
+    | '/mt5'
     | '/settings'
     | '/setup'
     | '/symbols'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/manual'
     | '/mentor'
+    | '/mt5'
     | '/settings'
     | '/setup'
     | '/symbols'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/manual'
     | '/mentor'
+    | '/mt5'
     | '/settings'
     | '/setup'
     | '/symbols'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   ManualRoute: typeof ManualRoute
   MentorRoute: typeof MentorRoute
+  Mt5Route: typeof Mt5Route
   SettingsRoute: typeof SettingsRoute
   SetupRoute: typeof SetupRoute
   SymbolsRoute: typeof SymbolsRoute
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mt5': {
+      id: '/mt5'
+      path: '/mt5'
+      fullPath: '/mt5'
+      preLoaderRoute: typeof Mt5RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentor': {
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   ManualRoute: ManualRoute,
   MentorRoute: MentorRoute,
+  Mt5Route: Mt5Route,
   SettingsRoute: SettingsRoute,
   SetupRoute: SetupRoute,
   SymbolsRoute: SymbolsRoute,
