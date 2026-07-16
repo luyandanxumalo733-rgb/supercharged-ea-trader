@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Palette, Server, Link2, Rocket, Coins, KeyRound, History, Bell, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Palette, Server, Link2, Rocket, Coins, KeyRound, History, Bell, Sun, Moon, Smartphone } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/settings")({
@@ -22,7 +22,8 @@ const THEMES = [
   { id: "gold",     name: "Royal Gold",    bg: "oklch(0.14 0.04 80)",  swatch: ["#1a1206", "#574012", "#f5c542"] },
 ];
 
-const LINKS: Array<{ to: "/bridge" | "/broker" | "/setup" | "/symbols" | "/mentor" | "/history" | "/manual"; label: string; desc: string; color: string; icon: typeof Server }> = [
+const LINKS: Array<{ to: "/bridge" | "/broker" | "/setup" | "/symbols" | "/mentor" | "/history" | "/manual" | "/mt5"; label: string; desc: string; color: string; icon: typeof Server }> = [
+  { to: "/mt5",     label: "Web-to-MT5 Trade Panel", desc: "Link account & place Buy/Sell with auto TP/SL", color: "oklch(0.78 0.20 230)", icon: Smartphone },
   { to: "/bridge",  label: "MT5 Bridge",         desc: "Test & manage the MetaApi bridge",  color: "oklch(0.70 0.20 200)", icon: Server },
   { to: "/broker",  label: "Broker Connection",  desc: "Link your Headway / MT5 account",   color: "oklch(0.78 0.18 60)",  icon: Link2 },
   { to: "/setup",   label: "Setup Wizard",       desc: "Validate credentials end-to-end",   color: "oklch(0.72 0.22 230)", icon: Rocket },
