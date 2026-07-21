@@ -3,12 +3,28 @@ services:
     name: supercharged-ea-trader
     env: node
     plan: starter
+    
+    # Build Configuration
     buildCommand: npm run build
     startCommand: npm run preview
+    
+    # Root directory - leave empty to use repo root
+    # Static files will be served from ./dist after build
+    
+    # Environment Variables
     envVars:
       - key: NODE_ENV
         value: production
-    staticPublishPath: ./dist
+      - key: VITE_SUPABASE_URL
+        value: https://gqaiqhoyslmjghqnnuym.supabase.co
+      - key: VITE_SUPABASE_PROJECT_ID
+        value: gqaiqhoyslmjghqnnuym
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        value: sb_publishable_Hco3MoMXhIz2nk9Krm7xcQ_5-SMHOkX
+    
+    # SPA Routing Configuration
     routes:
       - path: /
+        destination: /index.html
+      - path: /*
         destination: /index.html
