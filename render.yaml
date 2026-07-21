@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: supercharged-ea-trader
+    env: node
+    plan: starter
+    buildCommand: npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: NODE_ENV
+        value: production
+    staticPublishPath: ./dist
+    routes:
+      - path: /
+        destination: /index.html
