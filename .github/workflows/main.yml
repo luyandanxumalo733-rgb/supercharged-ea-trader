@@ -1,115 +1,223 @@
-  - name: Set up Node
-    uses: actions/setup-node@v4
-    with:   node-version: '18'
+name: Replace MetaApi with RenderBridge
 
-  - name: Install ripgrep (fast search)
-    run: sudo apt-get update && sudo apt-get install -y ripgrep
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-  - name: Create replacement script
-    run: |
-      cat > scripts/replace_metaapi.js <<'JS'
-      const fs = require('fs');
-      const path = require('path');
-      const { execSync } = require('child_process');
+permissions:
+  contents: write
+  actions: write
 
-      // Attempt to find the loveable package root
-      const candidates = ['loveable','packages/loveable','src/loveable','.'];
-      let loveableRoot = null;
-      for (const c of candidates) {
-        try { if (fs.existsSync(path.join(c,'package.json'))) { loveableRoot = c; break; } } catch(e){}
-      }
-      if (!loveableRoot) loveableRoot = '.';
-      console.log('Using loveable root:', loveableRoot);
+jobs:
+  replace-metaapi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      // Ensure bridges dir exists
-      const bridgesDir = path.join(loveableRoot,'src','bridges');
-      fs.mkdirSync(bridgesDir,{recursive:true});
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-      // Write RenderBridge implementation
-      const renderBridgePath = path.join(bridgesDir,'renderBridge.ts');
-      const renderBridgeCode = `// Auto-generated RenderBridge
-      import type { Bridge } from '../bridge';
-      // If Node <18, install cross-fetch and uncomment:
-      // import fetch from 'cross-fetch';
+      - name: Install ripgrep (fast search)
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
 
-      export type RenderBridgeOptions = {
-        baseUrl?: string;
-        apiKey?: string;
-        timeoutMs?: number;
-      };
+      - name: Create replacement script
+        run: |
+          cat > scripts/replace_metaapi.js <<'JS'
+          const fs = require('fs');
+          const path = require('path');
+          const { execSync } = require('child_process');
 
-      export class RenderBridge implements Bridge {
-        private baseUrl: string;
-        private apiKey?: string;
-        private timeoutMs: number;
-
-        constructor(opts: RenderBridgeOptions = {}) {
-          this.baseUrl = opts.baseUrl || process.env.RENDER_BRIDGE_URL || '';
-          this.apiKey = opts.apiKey || process.env.RENDER_API_KEY;
-          this.timeoutMs = opts.timeoutMs ?? 10000;
-          if (!this.baseUrl) throw new Error('RenderBridge requires baseUrl / RENDER_BRIDGE_URL');
-        }
-
-        private headers() {
-          const h: Record<string,string> = { 'Content-Type': 'application/json' };
-          if (this.apiKey) h['Authorization'] = \`Bearer \${this.apiKey}\`;
-          return h;
-        }
-
-        async connect(metadata?: any): Promise<any> {
-          const res = await fetch(\`\${this.baseUrl}/connect\`, {
-            method: 'POST',
-            headers: this.headers(),
-            body: JSON.stringify({ metadata }),
-          });
-          if (!res.ok) throw new Error(\`RenderBridge connect failed \${res.status}\`);
-          return res.json();
-        }
-
-        async startSession(payload?: any): Promise<any> {
-          const res = await fetch(\`\${this.baseUrl}/session\`, {
-            method: 'POST',
-            headers: this.headers(),
-            body: JSON.stringify(payload || {}),
-          });
-          if (!res.ok) throw new Error(\`RenderBridge startSession failed \${res.status}\`);
-          return res.json();
-        }
-
-        async sendOrder(order: any): Promise<any> {
-          const res = await fetch(\`\${this.baseUrl}/orders\`, {
-            method: 'POST',
-            headers: this.headers(),
-            body: JSON.stringify(order),
-          });
-          if (!res.ok) {
-            const t = await res.text();
-            throw new Error(\`RenderBridge sendOrder failed \${res.status} \${t}\`);
+          // Attempt to find the loveable package root
+          const candidates = ['loveable','packages/loveable','src/loveable','.'];
+          let loveableRoot = null;
+          for (const c of candidates) {
+            try { if (fs.existsSync(path.join(c,'package.json'))) { loveableRoot = c; break; } } catch(e){}
           }
-          return res.json();
-        }
+          if (!loveableRoot) loveableRoot = '.';
+          console.log('Using loveable root:', loveableRoot);
 
-        async getOrder(orderId: string): Promise<any> {
-          const res = await fetch(\`\${this.baseUrl}/orders/\${orderId}\`, {
-            method: 'GET',
-            headers: this.headers(),
-          });
-          if (!res.ok) throw new Error(\`RenderBridge getOrder failed \${res.status}\`);
-          return res.json();
-        }
+          // Ensure bridges dir exists
+          const bridgesDir = path.join(loveableRoot,'src','bridges');
+          fs.mkdirSync(bridgesDir,{recursive:true});
 
-        async getPositions(): Promise<any[]> {
-          const res = await fetch(\`\${this.baseUrl}/positions\`, {
-            method: 'GET',
-            headers: this.headers(),
-          });
-          if (!res.ok) throw new Error(\`RenderBridge getPositions failed \${res.status}\`);
-          return res.json();
-        }
+          // Write RenderBridge implementation
+          const renderBridgePath = path.join(bridgesDir,'renderBridge.ts');
+          const renderBridgeCode = `// Auto-generated RenderBridge
+          import type { Bridge } from '../bridge';
+          // If Node <18, install cross-fetch and uncomment:
+          // import fetch from 'cross-fetch';
 
-        async disconnect(): Promise<void> {
+          export type RenderBridgeOptions = {
+            baseUrl?: string;
+            apiKey?: string;
+            timeoutMs?: number;
+          };
+
+          export class RenderBridge implements Bridge {
+            private baseUrl: string;
+            private apiKey?: string;
+            private timeoutMs: number;
+
+            constructor(opts: RenderBridgeOptions = {}) {
+              this.baseUrl = opts.baseUrl || process.env.RENDER_BRIDGE_URL || '';
+              this.apiKey = opts.apiKey || process.env.RENDER_API_KEY;
+              this.timeoutMs = opts.timeoutMs ?? 10000;
+              if (!this.baseUrl) throw new Error('RenderBridge requires baseUrl / RENDER_BRIDGE_URL');
+            }
+
+            private headers() {
+              const h: Record<string,string> = { 'Content-Type': 'application/json' };
+              if (this.apiKey) h['Authorization'] = `Bearer ${this.apiKey}`;
+              return h;
+            }
+
+            async connect(metadata?: any): Promise<any> {
+              const res = await fetch(`${this.baseUrl}/connect`, {
+                method: 'POST',
+                headers: this.headers(),
+                body: JSON.stringify({ metadata }),
+              });
+              if (!res.ok) throw new Error(`RenderBridge connect failed ${res.status}`);
+              return res.json();
+            }
+
+            async startSession(payload?: any): Promise<any> {
+              const res = await fetch(`${this.baseUrl}/session`, {
+                method: 'POST',
+                headers: this.headers(),
+                body: JSON.stringify(payload || {}),
+              });
+              if (!res.ok) throw new Error(`RenderBridge startSession failed ${res.status}`);
+              return res.json();
+            }
+
+            async sendOrder(order: any): Promise<any> {
+              const res = await fetch(`${this.baseUrl}/orders`, {
+                method: 'POST',
+                headers: this.headers(),
+                body: JSON.stringify(order),
+              });
+              if (!res.ok) {
+                const t = await res.text();
+                throw new Error(`RenderBridge sendOrder failed ${res.status} ${t}`);
+              }
+              return res.json();
+            }
+
+            async getOrder(orderId: string): Promise<any> {
+              const res = await fetch(`${this.baseUrl}/orders/${orderId}`, {
+                method: 'GET',
+                headers: this.headers(),
+              });
+              if (!res.ok) throw new Error(`RenderBridge getOrder failed ${res.status}`);
+              return res.json();
+            }
+
+            async getPositions(): Promise<any[]> {
+              const res = await fetch(`${this.baseUrl}/positions`, {
+                method: 'GET',
+                headers: this.headers(),
+              });
+              if (!res.ok) throw new Error(`RenderBridge getPositions failed ${res.status}`);
+              return res.json();
+            }
+
+            async disconnect(): Promise<void> {
+              try {
+                await fetch(`${this.baseUrl}/disconnect`, {
+                  method: 'POST',
+                  headers: this.headers(),
+                  body: JSON.stringify({ time: Date.now() }),
+                });
+              } catch(e) {}
+            }
+          }
+          `;
+          fs.writeFileSync(renderBridgePath,renderBridgeCode,'utf8');
+          console.log('Wrote RenderBridge to',renderBridgePath);
+
+          // search for metaapi references and perform best-effort replacements
+          let found = '';
+          try { found = execSync('rg -n "metaapi|MetaApiBridge" || true',{encoding:'utf8'}).trim(); } catch(e){}
+          if (!found) {
+            try { found = execSync('grep -R -n "metaapi\\|MetaApiBridge" || true',{encoding:'utf8'}).trim(); } catch(e){}
+          }
+          if (found) {
+            const files = Array.from(new Set(found.split('\\n').map(l=>l.split(':')[0]).filter(Boolean)));
+            for (const file of files) {
+              try {
+                let txt = fs.readFileSync(file,'utf8');
+                const before = txt;
+                txt = txt.replace(/MetaApiBridge/g,'RenderBridge');
+                txt = txt.replace(/metaapiBridge/g,'renderBridge');
+                txt = txt.replace(/(['"\`])(\.\/|..\/|.*\/?)metaapiBridge\1/g,(m,q,p)=>`${q}${p}renderBridge${q}`);
+                txt = txt.replace(/\bmetaapi\b/g,'renderBridge');
+                if (txt !== before) {
+                  fs.writeFileSync(file,txt,'utf8');
+                  console.log('Patched',file);
+                }
+              } catch(e) {
+                console.warn('skip patch',file,e.message);
+              }
+            }
+          } else {
+            console.log('No metaapi references found (best-effort). Manual wiring may be needed.');
+          }
+
+          // modify package.json in loveable root to remove metaapi dep if present and add cross-fetch
+          const pkgPath = path.join(loveableRoot,'package.json');
+          if (fs.existsSync(pkgPath)) {
+            try {
+              const pkg = JSON.parse(fs.readFileSync(pkgPath,'utf8'));
+              pkg.dependencies = pkg.dependencies || {};
+              for (const k of Object.keys(pkg.dependencies)) {
+                if (/metaapi/i.test(k)) delete pkg.dependencies[k];
+              }
+              if (!pkg.dependencies['cross-fetch']) pkg.dependencies['cross-fetch']='^4.0.0';
+              fs.writeFileSync(pkgPath, JSON.stringify(pkg,null,2),'utf8');
+              console.log('Updated',pkgPath);
+            } catch(e){ console.warn('failed update package.json',e.message); }
+          } else { console.log('package.json not found in',loveableRoot); }
+
+          // create branch, commit & push
           try {
-            await fetch(\`\${this.baseUrl}/disconnect\`, {
+            execSync('git config user.email "action@github.com"');
+            execSync('git config user.name "github-actions[bot]"');
+            execSync('git checkout -b replace/metaapi-with-render');
+            execSync('git add -A');
+            execSync('git commit -m "Replace MetaApi bridge with RenderBridge (auto)" || true');
+            execSync('git push origin HEAD:replace/metaapi-with-render --force');
+            console.log('Pushed branch replace/metaapi-with-render');
+          } catch(e) {
+            console.error('git push failed',e.message);
+            process.exit(1);
+          }
+          JS
+
+      - name: Run replacement script
+        run: node scripts/replace_metaapi.js
+
+      - name: Install dependencies (loveable if present)
+        run: |
+          if [ -f package.json ]; then npm ci || npm install || true; fi
+          if [ -f loveable/package.json ]; then (cd loveable && npm ci) || true; fi
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'Replace MetaApi bridge with RenderBridge (auto)'
+          branch: replace/metaapi-with-render
+          title: Replace MetaApi bridge with RenderBridge
+          body: |
+            This PR replaces MetaApi references with a RenderBridge implementation (auto-generated). Please review import paths, types, and response shapes.
+          base: main            await fetch(\`\${this.baseUrl}/disconnect\`, {
               method: 'POST',
               headers: this.headers(),
               body: JSON.stringify({ time: Date.now() }),
